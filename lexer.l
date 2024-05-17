@@ -10,19 +10,23 @@
     #include <unistd.h>
 #endif
 
+#include "cesserract.h"
+
 %}
 
 %%
 
-[0-9]+  { return NUMBER; }
-[a-zA-Z_][a-zA-Z0-9_]*  { return IDENTIFIER; }
-"+"     { return PLUS; }
-"-"     { return MINUS; }
-"*"     { return MULTIPLY; }
-"/"     { return DIVIDE; }
-"\n"    { return EOL; }
-[ \t]   { /* ignore whitespace */ }
-.       { return yytext[0]; }
+[0-9]+      { return raportToken(NUMBER); }
+[a-zA-Z_][a-zA-Z0-9_]*  { return raportToken(IDENTIFIER); }
+
+"+"         { return raportToken(PLUS); }
+"-"         { return raportToken(MINUS); }
+"*"         { return raportToken(MULTIPLY); }
+"/"         { return raportToken(DIVIDE); }
+
+"\n"        { return raportToken(EOL); }
+[ \t]       { /* ignore whitespace */ }
+.           { return yytext[0]; }
 
 %%
 

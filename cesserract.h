@@ -1,7 +1,4 @@
-﻿// Cesserract.h : Include file for standard system include files,
-// or project specific include files.
-
-#pragma once
+﻿#pragma once
 
 
 // CPP Includes
@@ -13,3 +10,12 @@
 // BISON Includes
 #include "parser.hpp"
 #include "parser.tab.h"
+
+
+
+template<typename T>
+auto raportToken(T token) -> T
+{
+	std::cout << "Token: " << token << '\n';
+	return token;
+}
