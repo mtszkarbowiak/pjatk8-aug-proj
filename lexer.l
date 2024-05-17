@@ -1,10 +1,13 @@
 %{
 #include "parser.tab.h"  // Ensure this matches the output from Bison
 
-#define YY_NO_UNISTD_H
-
-#include <io.h>
-#define isatty _isatty
+#ifdef _WIN32
+    #define YY_NO_UNISTD_H
+    #include <io.h>
+    #define isatty _isatty
+#else
+    #include <unistd.h>
+#endif
 
 %}
 
