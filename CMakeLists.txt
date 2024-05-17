@@ -21,7 +21,7 @@ set(BISON_INPUT ${CMAKE_SOURCE_DIR}/parser.y)
 
 # Generate the lexer and parser
 FLEX_TARGET(MyScanner ${FLEX_INPUT} ${CMAKE_BINARY_DIR}/lexer.cpp)
-BISON_TARGET(MyParser ${BISON_INPUT} ${CMAKE_BINARY_DIR}/parser.cpp)
+BISON_TARGET(MyParser ${BISON_INPUT} ${CMAKE_BINARY_DIR}/parser.cpp COMPILE_FLAGS "--defines=${CMAKE_BINARY_DIR}/parser.tab.h")
 
 # Include directories for generated files
 include_directories(${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR})

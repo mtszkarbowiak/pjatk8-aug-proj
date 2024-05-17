@@ -1,4 +1,7 @@
-﻿// Cesserract.cpp : Defines the entry point for the application.
-//
+﻿#include <stdio.h>
 
-#include "Cesserract.h"
+#include "parser.tab.h"
+
+int main() {
+    return yyparse();
+}

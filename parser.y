@@ -1,35 +1,36 @@
 %{
-
-#include <cstdio>
-#include <iostream>
-
-#include "parser.hpp"
-#include "cesserract.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include "parser.tab.h"  // Ensure this matches the output from Bison
 
 int yylex(void);
 void yyerror(const char *s);
 
 %}
 
-%token NUMBER PLUS MINUS MUL DIV
+%token NUMBER IDENTIFIER PLUS MINUS MULTIPLY DIVIDE EOL
 
 %%
 
 expression:
-    expression PLUS expression
-    | expression MINUS expression
-    | expression MUL expression
-    | expression DIV expression
-    | NUMBER
+    term
+    | expression PLUS term
+    | expression MINUS term
+    ;
+
+term:
+    factor
+    | term MULTIPLY factor
+    | term DIVIDE factor
+    ;
+
+factor:
+    NUMBER
+    | IDENTIFIER
     ;
 
 %%
 
-int main() {
-    std::cout << "Hello CMake." << '\n';
-    yyparse();
-    return 0;
-}
 void yyerror(const char *s) {
     fprintf(stderr, "Error: %s\n", s);
 }
