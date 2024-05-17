@@ -1,7 +1,8 @@
-﻿#include <stdio.h>
+﻿
+#include "cesserract.h"
 
-#include "parser.tab.h"
-
-int main() {
+int main()
+{
+    std::cout << "Hello World!\n";
     return yyparse();
 }

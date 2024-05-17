@@ -1,7 +1,10 @@
 %{
+
 #include <stdio.h>
 #include <stdlib.h>
-#include "parser.tab.h"  // Ensure this matches the output from Bison
+
+
+#include "parser.tab.h"
 
 int yylex(void);
 void yyerror(const char *s);
@@ -31,6 +34,7 @@ factor:
 
 %%
 
-void yyerror(const char *s) {
+void yyerror(const char *s) 
+{
     fprintf(stderr, "Error: %s\n", s);
 }

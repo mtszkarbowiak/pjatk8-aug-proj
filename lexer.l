@@ -1,4 +1,5 @@
 %{
+
 #include "parser.tab.h"  // Ensure this matches the output from Bison
 
 #ifdef _WIN32
