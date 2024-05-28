@@ -28,7 +28,7 @@ class LexerUtil
 public:
 	void set_verbose(bool verbose);
 
-	auto feed(yytokentype token) -> int;
+	auto feed(yytokentype token_type, const char* token_value = nullptr) -> int;
 	void print_diagnostics() const;
 
 	auto get_comment_level() const -> int32_t;

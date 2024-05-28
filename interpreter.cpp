@@ -92,15 +92,18 @@ void LexerUtil::set_verbose(const bool verbose)
 	this->verbose = verbose;
 }
 
-auto LexerUtil::feed(const yytokentype token) -> int
+auto LexerUtil::feed(const yytokentype token_type, const char* token_value) -> int
 {
 	if (verbose)
 	{
-		std::string msg = "Token: " + std::string(get_token_name(token));
+		std::string msg = (token_value != nullptr)
+			? (std::string(get_token_name(token_type)) + ": " + token_value)
+			: (std::string(get_token_name(token_type)));
+
 		diagnostics.emplace_back(std::move(msg));
 	}
 
-	return token;
+	return token_type;
 }
 
 void LexerUtil::print_diagnostics() const

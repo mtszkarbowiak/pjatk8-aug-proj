@@ -39,7 +39,7 @@
 "else"          { return lu().feed(ELSE); }
 "while"         { return lu().feed(WHILE); }
 
-[0-9]+          { return lu().feed(NUMBER); }
+[0-9]+          { return lu().feed(NUMBER, yytext); }
 "true"          { return lu().feed(TRUE); }
 "false"         { return lu().feed(FALSE); }
 
@@ -58,9 +58,9 @@
 
 ("&&"|"and")    { return lu().feed(LOGIC_AND); }
 ("||"|"or")     { return lu().feed(LOGIC_OR); }
-("^"|"xor")    { return lu().feed(LOGIC_XOR); }
+("^"|"xor")     { return lu().feed(LOGIC_XOR); }
 
-[a-zA-Z_][a-zA-Z0-9_]*  { return lu().feed(IDENTIFIER); }
+[a-zA-Z_][a-zA-Z0-9_]*  { return lu().feed(IDENTIFIER, yytext); }
 
 "="             { return lu().feed(ASSIGN); }
 ":"             { return lu().feed(OF_TYPE); }
