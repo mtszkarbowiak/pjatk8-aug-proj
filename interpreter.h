@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 // BISON Includes
-#include "parser.hpp"
+// #include "parser.hpp"
 #include "parser.tab.h"
 
 
@@ -26,7 +26,9 @@ class LexerUtil
 	bool verbose = true;
 
 public:
-	auto feed(int token) -> int;
+	void set_verbose(bool verbose);
+
+	auto feed(yytokentype token) -> int;
 	void print_diagnostics() const;
 
 	auto get_comment_level() const -> int32_t;

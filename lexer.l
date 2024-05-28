@@ -31,17 +31,30 @@
 }
 <COMMENT>.|\n  { /* Consume characters inside comments */ }
 
+"stop"      { return lu().feed(STOP); }
+"let"       { return lu().feed(LET); }
+"assert"    { return lu().feed(ASSERT); }
 
+"if"        { return lu().feed(IF); }
+"else"      { return lu().feed(ELSE); }
+"while"     { return lu().feed(WHILE); }
 
 [0-9]+      { return lu().feed(NUMBER); }
+"true"      { return lu().feed(TRUE); }
+"false"     { return lu().feed(FALSE); }
+
 [a-zA-Z_][a-zA-Z0-9_]*  { return lu().feed(IDENTIFIER); }
 
-"+"         { return lu().feed(PLUS); }
-"-"         { return lu().feed(MINUS); }
 "*"         { return lu().feed(MULTIPLY); }
 "/"         { return lu().feed(DIVIDE); }
+"%"         { return lu().feed(MODULO); }
+"+"         { return lu().feed(PLUS); }
+"-"         { return lu().feed(MINUS); }
 
-"\n"        { return lu().feed(EOL); }
+"="         { return lu().feed(EQUAL_TO); }
+":"         { return lu().feed(OF_TYPE); }
+
+"\n"        { return lu().feed(YYEOF); }
 [ \t]       { /* ignore whitespace */ }
 .           { return yytext[0]; }
 
