@@ -3,6 +3,7 @@
 
 // CPP Includes
 #include <iostream>
+#include <vector>
 
 // C Includes
 #include <stdio.h>
@@ -12,10 +13,24 @@
 #include "parser.tab.h"
 
 
+/// <summary>
+///	Returns the LexerUtil instance.
+/// </summary>
+auto lu() -> class LexerUtil&;
 
-template<typename T>
-auto feed_token(T token) -> T
+
+class LexerUtil
 {
-	std::cout << "Token: " << token << '\n';
-	return token;
-}
+	int32_t comment_level = 0;
+	std::vector<std::string> diagnostics{};
+	bool verbose = true;
+
+public:
+	auto feed(int token) -> int;
+	void print_diagnostics() const;
+
+	auto get_comment_level() const -> int32_t;
+	void increase_comment_level();
+	void decrease_comment_level();
+};
+
