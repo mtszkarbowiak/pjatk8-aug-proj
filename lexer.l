@@ -31,32 +31,43 @@
 }
 <COMMENT>.|\n  { /* Consume characters inside comments */ }
 
-"stop"      { return lu().feed(STOP); }
-"let"       { return lu().feed(LET); }
-"assert"    { return lu().feed(ASSERT); }
+"stop"          { return lu().feed(STOP); }
+"let"           { return lu().feed(LET); }
+"assert"        { return lu().feed(ASSERT); }
 
-"if"        { return lu().feed(IF); }
-"else"      { return lu().feed(ELSE); }
-"while"     { return lu().feed(WHILE); }
+"if"            { return lu().feed(IF); }
+"else"          { return lu().feed(ELSE); }
+"while"         { return lu().feed(WHILE); }
 
-[0-9]+      { return lu().feed(NUMBER); }
-"true"      { return lu().feed(TRUE); }
-"false"     { return lu().feed(FALSE); }
+[0-9]+          { return lu().feed(NUMBER); }
+"true"          { return lu().feed(TRUE); }
+"false"         { return lu().feed(FALSE); }
+
+"*"             { return lu().feed(MULTIPLY); }
+"/"             { return lu().feed(DIVIDE); }
+"%"             { return lu().feed(MODULO); }
+"+"             { return lu().feed(PLUS); }
+"-"             { return lu().feed(MINUS); }
+
+"=="            { return lu().feed(EQUAL); }
+"!="            { return lu().feed(NOT_EQUAL); }
+"<"             { return lu().feed(LESS_THAN); }
+">"             { return lu().feed(MORE_THAN); }
+"<="            { return lu().feed(LESS_EQUAL); }
+">="            { return lu().feed(MORE_EQUAL); }
+
+("&&"|"and")    { return lu().feed(LOGIC_AND); }
+("||"|"or")     { return lu().feed(LOGIC_OR); }
+("^"|"xor")    { return lu().feed(LOGIC_XOR); }
 
 [a-zA-Z_][a-zA-Z0-9_]*  { return lu().feed(IDENTIFIER); }
 
-"*"         { return lu().feed(MULTIPLY); }
-"/"         { return lu().feed(DIVIDE); }
-"%"         { return lu().feed(MODULO); }
-"+"         { return lu().feed(PLUS); }
-"-"         { return lu().feed(MINUS); }
+"="             { return lu().feed(ASSIGN); }
+":"             { return lu().feed(OF_TYPE); }
 
-"="         { return lu().feed(EQUAL_TO); }
-":"         { return lu().feed(OF_TYPE); }
-
-"\n"        { return lu().feed(YYEOF); }
-[ \t]       { /* ignore whitespace */ }
-.           { return yytext[0]; }
+"\n"            { return lu().feed(YYEOF); }
+[ \t]           { /* ignore whitespace */ }
+.               { return yytext[0]; }
 
 %%
 

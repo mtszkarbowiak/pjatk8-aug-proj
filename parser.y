@@ -15,17 +15,20 @@ void yyerror(const char *s);
 %locations
 
 %token STOP
-%token LET EQUAL_TO OF_TYPE ASSERT
+%token LET ASSIGN OF_TYPE ASSERT
 %token IF ELSE WHILE
 %token TRUE FALSE NUMBER
 %token IDENTIFIER
 %token PLUS MINUS MULTIPLY DIVIDE MODULO 
+%token EQUAL NOT_EQUAL LESS_THAN MORE_THAN LESS_EQUAL MORE_EQUAL
+%token LOGIC_AND LOGIC_OR LOGIC_XOR
 %token EOL
 
 %start program
 
-%left PLUS MINUS
-%left DIVIDE MULTIPLY MODULO
+%left PLUS MINUS DIVIDE MULTIPLY MODULO
+%left EQUAL NOT_EQUAL LESS_THAN MORE_THAN LESS_EQUAL MORE_EQUAL
+%left LOGIC_AND LOGIC_OR LOGIC_XOR
 
 %%
 
@@ -45,8 +48,8 @@ statements:
 
 statement:
 	expression
-	| LET IDENTIFIER EQUAL_TO expression
-	| LET IDENTIFIER OF_TYPE IDENTIFIER EQUAL_TO expression
+	| LET IDENTIFIER ASSIGN expression
+	| LET IDENTIFIER OF_TYPE IDENTIFIER ASSIGN expression
 	| IF expression body
 	| IF expression body ELSE body
 	| WHILE expression body
@@ -60,6 +63,15 @@ expression:
 	| expression PLUS expression
 	| expression MINUS expression
 	| expression MODULO expression
+	| expression EQUAL expression
+	| expression NOT_EQUAL expression
+	| expression LESS_THAN expression
+	| expression MORE_THAN expression
+	| expression LESS_EQUAL expression
+	| expression MORE_EQUAL expression
+	| expression LOGIC_AND expression
+	| expression LOGIC_OR expression
+	| expression LOGIC_XOR expression
 	| TRUE
 	| FALSE
 	| NUMBER

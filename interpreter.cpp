@@ -52,7 +52,7 @@ auto get_token_name(const yytokentype token) -> const char*
 		case LET:				return "Variable Assignment Keyword";
 		case ASSERT:			return "Assert Operator";
 
-		case EQUAL_TO:			return "Variable Assignment Operator";
+		case ASSIGN:			return "Variable Assignment Operator";
 		case OF_TYPE:			return "Type Declaration Operator";
 
 		case IF:				return "If Control Flow Operator";
@@ -65,11 +65,22 @@ auto get_token_name(const yytokentype token) -> const char*
 		case NUMBER:			return "Number Literal";
 		case IDENTIFIER:		return "Identifier";
 
-		case PLUS:				return "Plus";
-		case MINUS:				return "Minus";
-		case MULTIPLY:			return "Multiply";
-		case DIVIDE:			return "Divide";
-		case MODULO:			return "Modulo";
+		case PLUS:				return "Plus Arithmetic Operator";
+		case MINUS:				return "Minus Arithmetic Operator";
+		case MULTIPLY:			return "Multiply Arithmetic Operator";
+		case DIVIDE:			return "Divide Arithmetic Operator";
+		case MODULO:			return "Modulo Arithmetic Operator";
+
+		case LOGIC_AND:			return "AND Logic Operator";
+		case LOGIC_OR:			return "OR Logic Operator";
+		case LOGIC_XOR:			return "XOR Logic Operator";
+
+		case EQUAL:				return "Equality Operator";
+		case NOT_EQUAL:			return "Inequality Operator";
+		case LESS_THAN:			return "Less Than Operator";
+		case MORE_THAN:			return "More Than Operator";
+		case LESS_EQUAL:		return "Less Than Or Equal Operator";
+		case MORE_EQUAL:		return "More Than Or Equal Operator";
 
 		default:				return "???";
 	}
