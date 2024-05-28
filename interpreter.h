@@ -14,7 +14,7 @@
 
 
 template<typename T>
-auto raportToken(T token) -> T
+auto feed_token(T token) -> T
 {
 	std::cout << "Token: " << token << '\n';
 	return token;

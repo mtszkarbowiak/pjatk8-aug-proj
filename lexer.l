@@ -10,21 +10,21 @@
     #include <unistd.h>
 #endif
 
-#include "cesserract.h"
+#include "interpreter.h"
 
 %}
 
 %%
 
-[0-9]+      { return raportToken(NUMBER); }
-[a-zA-Z_][a-zA-Z0-9_]*  { return raportToken(IDENTIFIER); }
+[0-9]+      { return feed_token(NUMBER); }
+[a-zA-Z_][a-zA-Z0-9_]*  { return feed_token(IDENTIFIER); }
 
-"+"         { return raportToken(PLUS); }
-"-"         { return raportToken(MINUS); }
-"*"         { return raportToken(MULTIPLY); }
-"/"         { return raportToken(DIVIDE); }
+"+"         { return feed_token(PLUS); }
+"-"         { return feed_token(MINUS); }
+"*"         { return feed_token(MULTIPLY); }
+"/"         { return feed_token(DIVIDE); }
 
-"\n"        { return raportToken(EOL); }
+"\n"        { return feed_token(EOL); }
 [ \t]       { /* ignore whitespace */ }
 .           { return yytext[0]; }
 

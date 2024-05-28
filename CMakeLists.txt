@@ -27,7 +27,7 @@ BISON_TARGET(MyParser ${BISON_INPUT} ${CMAKE_BINARY_DIR}/parser.cpp COMPILE_FLAG
 include_directories(${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR})
 
 # Add source to this project's executable.
-add_executable(Cesserract "cesserract.cpp" "cesserract.h" ${FLEX_MyScanner_OUTPUTS} ${BISON_MyParser_OUTPUTS})
+add_executable(Cesserract "interpreter.cpp" "interpreter.h" ${FLEX_MyScanner_OUTPUTS} ${BISON_MyParser_OUTPUTS})
 
 if(CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET Cesserract PROPERTY CXX_STANDARD 20)
