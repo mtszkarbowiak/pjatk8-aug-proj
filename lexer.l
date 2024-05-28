@@ -10,7 +10,7 @@
     #include <unistd.h>
 #endif
 
-#include "interpreter.h"
+#include "lexing.h"
 
 %}
 

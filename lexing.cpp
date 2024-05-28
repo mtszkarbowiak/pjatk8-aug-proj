@@ -1,7 +1,8 @@
 ﻿
-#include "interpreter.h"
+#include "lexing.h"
 
-#include <string>
+#include <any>
+#include <iostream>
 
 
 auto main() -> int
@@ -11,12 +12,10 @@ auto main() -> int
 	// Invoke Lexer and Parser
     const auto parsing_result = yyparse();
 
-	if (parsing_result != 0) 
-	{
+	if (parsing_result != 0) {
 		lu().print_log();
 	}
-	else
-	{
+	else {
 		std::cout << "Program finished";
 	}
 
@@ -82,6 +81,9 @@ auto get_token_name(const yytokentype token) -> const char*
 		case LESS_EQUAL:		return "Less Than Or Equal Operator";
 		case MORE_EQUAL:		return "More Than Or Equal Operator";
 
+		case STATEMENT_SEPARATOR: return "Statements Separator";
+		case BODY_OPEN:			return "Body Opening Brace";
+		case BODY_CLOSE:		return "Body Closing Brace";
 		default:				return "???";
 	}
 }
@@ -108,8 +110,7 @@ auto LexerUtil::feed(const yytokentype token_type, const char* token_value) -> i
 
 void LexerUtil::print_log() const
 {
-	for (const auto& msg : log)
-	{
+	for (const auto& msg : log) {
 		std::cout << msg << '\n';
 	}
 }
@@ -122,8 +123,7 @@ auto LexerUtil::get_comment_level() const -> int32_t
 
 void LexerUtil::increase_comment_level()
 {
-	if (verbose_log) 
-	{
+	if (verbose_log) {
 		std::string msg = "Comment level increased to " + std::to_string(this->comment_level + 1);
 		log.emplace_back(std::move(msg));
 	}
@@ -133,14 +133,12 @@ void LexerUtil::increase_comment_level()
 
 void LexerUtil::decrease_comment_level()
 {
-	if (this->comment_level <= 0) 
-	{
+	if (this->comment_level <= 0) {
 		std::string msg = "Comment level is already 0. Token ignored.";
 		log.emplace_back(std::move(msg));
 	}
 
-	if (verbose_log) 
-	{
+	if (verbose_log) {
 		std::string msg = "Comment level decreased to " + std::to_string(this->comment_level - 1);
 		log.emplace_back(std::move(msg));
 	}

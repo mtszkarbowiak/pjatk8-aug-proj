@@ -2,9 +2,7 @@
 
 
 // CPP Includes
-#include <any>
-#include <iostream>
-#include <map>
+#include <string>
 #include <vector>
 
 // C Includes
@@ -51,30 +49,4 @@ public:
 	void increase_comment_level();
 
 	void decrease_comment_level();
-};
-
-class Variable final
-{
-	std::any value;
-
-public:
-	template<typename T>
-	[[nodiscard]] auto is_type() const -> bool
-	{
-		return typeid(T) == value.type();
-	}
-};
-
-class Execution final
-{
-	Variable result;
-};
-
-class Ast final
-{
-	class LiteralNode;
-	class UnaryExpressionNode;
-	class BinaryExpressionNode;
-	class VariableDeclarationNode;
-	class VariableReassignmentNode;
 };

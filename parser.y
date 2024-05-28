@@ -6,6 +6,9 @@
 
 #include "parser.tab.h"
 
+#include "ast.h"
+
+
 int yylex(void);
 void yyerror(const char *s);
 
@@ -13,6 +16,12 @@ void yyerror(const char *s);
 
 %define parse.error detailed
 %locations
+
+%union {
+	class AstNode* node;
+	class StatementNode* statement;
+	class ExpressionNode* expression;
+}
 
 %token STOP
 %token STATEMENT_SEPARATOR BODY_OPEN BODY_CLOSE
@@ -39,6 +48,7 @@ program:
 
 body:
 	BODY_OPEN statements BODY_CLOSE
+	| statement
 	;
 
 statements:
