@@ -104,6 +104,20 @@ LiteralNode::LiteralNode(ExpressionNode* expression, std::any&& value)
 	}
 }
 
+auto LiteralNode::new_numerical(ExpressionNode* expression, NumericalVar value) -> LiteralNode*
+{
+	auto result = new LiteralNode(expression, value);
+	//TODO
+	return result;
+}
+
+auto LiteralNode::new_boolean(ExpressionNode* expression, BooleanVar value) -> LiteralNode*
+{
+	auto result = new LiteralNode(expression, value);
+	//TODO
+	return result;
+}
+
 
 void LiteralNode::print(std::stringbuf& buf, const int32_t depth) const
 {

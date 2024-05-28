@@ -19,9 +19,12 @@ void yyerror(const char *s);
 
 %union {
 	class AstNode* node;
-	class StatementNode* statement;
-	class ExpressionNode* expression;
+	class StatementNode* statement_node;
+	class ExpressionNode* expression_node;
 }
+
+%type <node> statement
+%type <node> expression
 
 %token STOP
 %token STATEMENT_SEPARATOR BODY_OPEN BODY_CLOSE
@@ -84,7 +87,7 @@ expression:
 	| expression LOGIC_AND expression
 	| expression LOGIC_OR expression
 	| expression LOGIC_XOR expression
-	| TRUE
+	| TRUE									{ $$ = LiteralNode::new_boolean(nullptr, true); }
 	| FALSE
 	| NUMBER
 	| IDENTIFIER

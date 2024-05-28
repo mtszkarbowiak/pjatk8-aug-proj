@@ -11,6 +11,15 @@ using BooleanVar = bool;
 using TextVar = std::string;
 
 
+//TODO
+// To wszystko jest do poprawy:
+// 1. Zamiast przypinac dzieci, dzieci powinny byc przesuwane do unique'ow rodzicow.
+// 2. W parserze ostatnie stworzone dziecko powinno wyladowac w unii.
+// 3. Tworzenie rodzica nastapi przy pomocy unii.
+// W ten sposob, unika sie dodatkowych struktur danych tj. stack.
+// Dodatkowo jest on bezpieczniejszy bo wszystkie dzieci sa z unique'ami.
+
+
 class Variable final
 {
 	std::string name;
@@ -94,9 +103,8 @@ class LiteralNode final : public AstNode
 	explicit LiteralNode(ExpressionNode* expression, std::any&& value);
 
 public:
-	//static auto new_numerical(ExpressionNode* expression, NumericalVar value) -> LiteralNode*;
-	//static auto new_boolean(ExpressionNode* expression, BooleanVar value) -> LiteralNode*;
-	//static auto new_text(ExpressionNode* expression, TextVar value) -> LiteralNode*;
+	static auto new_numerical(ExpressionNode* expression, NumericalVar value) -> LiteralNode*;
+	static auto new_boolean(ExpressionNode* expression, BooleanVar value) -> LiteralNode*;
 
 	auto print(std::stringbuf& buf, int32_t depth) const -> void override;
 
