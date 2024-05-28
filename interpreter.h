@@ -19,20 +19,34 @@
 auto lu() -> class LexerUtil&;
 
 
-class LexerUtil
+class LexerUtil final
 {
 	int32_t comment_level = 0;
-	std::vector<std::string> diagnostics{};
-	bool verbose = true;
+	std::vector<std::string> log{};
+	bool verbose_log = true;
 
 public:
-	void set_verbose(bool verbose);
+	/// <summary>
+	///	Configures if full log is built during lexing.
+	/// </summary>
+	void set_verbose_log(bool v);
 
+
+	/// <summary>
+	///	Handles next token.
+	/// </summary>
 	auto feed(yytokentype token_type, const char* token_value = nullptr) -> int;
-	void print_diagnostics() const;
+
+	/// <summary>
+	///	Prints the log to std::cout.
+	/// </summary>
+	void print_log() const;
+
 
 	auto get_comment_level() const -> int32_t;
+
 	void increase_comment_level();
+
 	void decrease_comment_level();
 };
 

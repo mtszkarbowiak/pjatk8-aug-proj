@@ -6,14 +6,14 @@
 
 auto main() -> int
 {
-	lu().set_verbose(true);
+	lu().set_verbose_log(true);
 
 	// Invoke Lexer and Parser
     const auto parsing_result = yyparse();
 
 	if (parsing_result != 0) 
 	{
-		lu().print_diagnostics();
+		lu().print_log();
 	}
 	else
 	{
@@ -87,28 +87,28 @@ auto get_token_name(const yytokentype token) -> const char*
 }
 
 
-void LexerUtil::set_verbose(const bool verbose)
+void LexerUtil::set_verbose_log(const bool v)
 {
-	this->verbose = verbose;
+	this->verbose_log = v;
 }
 
 auto LexerUtil::feed(const yytokentype token_type, const char* token_value) -> int
 {
-	if (verbose)
+	if (verbose_log)
 	{
 		std::string msg = (token_value != nullptr)
 			? (std::string(get_token_name(token_type)) + ": " + token_value)
 			: (std::string(get_token_name(token_type)));
 
-		diagnostics.emplace_back(std::move(msg));
+		log.emplace_back(std::move(msg));
 	}
 
 	return token_type;
 }
 
-void LexerUtil::print_diagnostics() const
+void LexerUtil::print_log() const
 {
-	for (const auto& msg : diagnostics)
+	for (const auto& msg : log)
 	{
 		std::cout << msg << '\n';
 	}
@@ -122,10 +122,10 @@ auto LexerUtil::get_comment_level() const -> int32_t
 
 void LexerUtil::increase_comment_level()
 {
-	if (verbose) 
+	if (verbose_log) 
 	{
 		std::string msg = "Comment level increased to " + std::to_string(this->comment_level + 1);
-		diagnostics.emplace_back(std::move(msg));
+		log.emplace_back(std::move(msg));
 	}
 
 	++this->comment_level;
@@ -136,13 +136,13 @@ void LexerUtil::decrease_comment_level()
 	if (this->comment_level <= 0) 
 	{
 		std::string msg = "Comment level is already 0. Token ignored.";
-		diagnostics.emplace_back(std::move(msg));
+		log.emplace_back(std::move(msg));
 	}
 
-	if (verbose) 
+	if (verbose_log) 
 	{
 		std::string msg = "Comment level decreased to " + std::to_string(this->comment_level - 1);
-		diagnostics.emplace_back(std::move(msg));
+		log.emplace_back(std::move(msg));
 	}
 
 	--this->comment_level;
