@@ -15,6 +15,7 @@ void yyerror(const char *s);
 %locations
 
 %token STOP
+%token STATEMENT_SEPARATOR BODY_OPEN BODY_CLOSE
 %token LET ASSIGN OF_TYPE ASSERT
 %token IF ELSE WHILE
 %token TRUE FALSE NUMBER
@@ -37,11 +38,11 @@ program:
 	;
 
 body:
-	'{' statements '}'
+	BODY_OPEN statements BODY_CLOSE
 	;
 
 statements:
-	statements OF_TYPE statement
+	statements STATEMENT_SEPARATOR statement
 	| statement
 	;
 
@@ -50,6 +51,7 @@ statement:
 	expression
 	| LET IDENTIFIER ASSIGN expression
 	| LET IDENTIFIER OF_TYPE IDENTIFIER ASSIGN expression
+	| IDENTIFIER ASSIGN expression 
 	| IF expression body
 	| IF expression body ELSE body
 	| WHILE expression body

@@ -64,6 +64,9 @@
 
 "="             { return lu().feed(ASSIGN); }
 ":"             { return lu().feed(OF_TYPE); }
+";"             { return lu().feed(STATEMENT_SEPARATOR); }
+"{"             { return lu().feed(BODY_OPEN); }
+"}"             { return lu().feed(BODY_CLOSE); }
 
 "\n"            { return lu().feed(YYEOF); }
 [ \t]           { /* ignore whitespace */ }
