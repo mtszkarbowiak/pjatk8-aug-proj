@@ -102,6 +102,8 @@ public:
 
 	auto print(std::stringbuf& buf, int32_t depth) const -> void override;
 
+	// virtual auto evaluate() -> std::any = 0; //TODO
+
 	~LiteralNode() override = default;
 };
 
@@ -188,7 +190,9 @@ public:
 class StatementNode : public AstNode
 {
 public:
-	explicit StatementNode(std::vector<ExpressionNodePtr> expressions);
+	explicit StatementNode();
+
+	// virtual void execute(ExecutionContext& context) const = 0; //TODO
 
 	~StatementNode() override = default;
 };

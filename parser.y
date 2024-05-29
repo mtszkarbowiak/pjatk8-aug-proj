@@ -3,11 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #include "parser.tab.h"
-
 #include "ast.h"
-
 
 int yylex(void);
 void yyerror(const char *s);
@@ -16,10 +13,6 @@ void yyerror(const char *s);
 
 %define parse.error detailed
 %locations
-
-%code requires {
-	#include "ast.h"
-}
 
 %union {
 	class Node* node;
