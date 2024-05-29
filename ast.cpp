@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 
+
 auto Variable::get_name() const -> const std::string&
 {
 	return this->name;
@@ -20,6 +21,7 @@ auto Variable::get_value() -> std::any&
 }
 
 
+
 // Creates a predicate to be used to search variable by its name.
 auto get_var_name_predicate(std::string_view name)
 {
@@ -29,7 +31,7 @@ auto get_var_name_predicate(std::string_view name)
 }
 
 
-auto ExecutionContext::try_get_var_value(const std::string_view name) -> std::any*
+auto ExecutionScopedState::try_get_var_value(const std::string_view name) -> std::any*
 {
 	auto result = std::find_if(
 		variables.begin(),
@@ -42,7 +44,7 @@ auto ExecutionContext::try_get_var_value(const std::string_view name) -> std::an
 	return found ? (&result->get_value()) : nullptr;
 }
 
-void ExecutionContext::declare_variable(Variable&& variable)
+void ExecutionScopedState::declare_variable(Variable&& variable)
 {
 	const auto result = std::find_if(
 		variables.begin(),
@@ -76,7 +78,7 @@ UnaryExpressionNode::UnaryExpressionNode(
 	ExpressionNode* child)
 	: ExpressionNode()
 	, operator_(op)
-	, child(ExpressionNodePtr(child))
+	, child(std::unique_ptr<ExpressionNode>(child))
 {
 }
 
@@ -86,8 +88,8 @@ BinaryExpressionNode::BinaryExpressionNode(
 	ExpressionNode* right)
 	: ExpressionNode()
 	, operator_(op)
-	, left_child(ExpressionNodePtr(left))
-	, right_child(ExpressionNodePtr(right))
+	, left_child(std::unique_ptr<ExpressionNode>(left))
+	, right_child(std::unique_ptr<ExpressionNode>(right))
 {
 }
 

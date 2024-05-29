@@ -6,22 +6,10 @@
 #include <variant>
 #include <vector>
 
-#include "ast.h"
-#include "ast.h"
-
 
 using NumericalVar = int32_t;
 using BooleanVar = bool;
 using TextVar = std::string;
-
-
-//TODO
-// To wszystko jest do poprawy:
-// 1. Zamiast przypinac dzieci, dzieci powinny byc przesuwane do unique'ow rodzicow.
-// 2. W parserze ostatnie stworzone dziecko powinno wyladowac w unii.
-// 3. Tworzenie rodzica nastapi przy pomocy unii.
-// W ten sposob, unika sie dodatkowych struktur danych tj. stack.
-// Dodatkowo jest on bezpieczniejszy bo wszystkie dzieci sa z unique'ami.
 
 
 class Variable final
@@ -48,8 +36,7 @@ public:
 };
 
 
-
-class ExecutionContext final
+class ExecutionScopedState final
 {
 	std::vector<Variable> variables;
 
@@ -60,13 +47,16 @@ public:
 };
 
 
+// --- Note ---
+// Bison (for C) is not compatible with move-only types such as unique_ptr.
+// When the union uses move-only types, it fails to be copied in Bison's internals.
+// To mitigate this issue, the union uses raw pointer. Of course, this solution
+// is regarded unsafe in C++ world. Therefor all nodes take raw pointers to children
+// as constructor parameters. Then such parent takes ownership by wrapping the
+// incoming chin in unique_ptr. A child must never be passed to multiple parents.
+// Such operation does not makes sense conceptually and can corrupt memory.
 
-using NodePtr = std::unique_ptr<class AstNode>;
-using ExpressionNodePtr = std::unique_ptr<class ExpressionNode>;
-using StatementNodePtr = std::unique_ptr<class StatementNode>;
 
-
-/// Atomic element of AST.
 class AstNode
 {
 protected:
@@ -79,7 +69,6 @@ public:
 };
 
 
-/// Node that can be evaluated.
 class ExpressionNode : public AstNode
 {
 protected:
@@ -91,7 +80,6 @@ public:
 	~ExpressionNode() override = default;
 };
 
-/// Atomic object of evaluation.
 class LiteralNode final : public ExpressionNode
 {
 	std::any value;
@@ -120,7 +108,7 @@ public:
 
 private:
 	Operator operator_;
-	ExpressionNodePtr child;
+	std::unique_ptr<ExpressionNode> child;
 };
 
 class BinaryExpressionNode final : public ExpressionNode
@@ -169,8 +157,8 @@ public:
 
 private:
 	OperatorVariant operator_;
-	ExpressionNodePtr left_child;
-	ExpressionNodePtr right_child;
+	std::unique_ptr<ExpressionNode> left_child;
+	std::unique_ptr<ExpressionNode> right_child;
 };
 
 
@@ -184,9 +172,6 @@ public:
 	void print(std::stringbuf& buf, int32_t depth) const override;
 };
 
-
-
-/// Node that can be executed.
 class StatementNode : public AstNode
 {
 public:
