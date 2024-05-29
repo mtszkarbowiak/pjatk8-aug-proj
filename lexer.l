@@ -39,9 +39,9 @@
 "else"          { return lu().feed(ELSE); }
 "while"         { return lu().feed(WHILE); }
 
-[0-9]+          { return lu().feed(NUMBER, yytext); }
-"true"          { return lu().feed(TRUE); }
-"false"         { return lu().feed(FALSE); }
+[0-9]+          { yylval.ival = atoi(yytext); return lu().feed(NUMBER, yytext); }
+"true"          { yylval.bval = true; return lu().feed(TRUE); }
+"false"         { yylval.bval = false; return lu().feed(FALSE); }
 
 "*"             { return lu().feed(MULTIPLY); }
 "/"             { return lu().feed(DIVIDE); }

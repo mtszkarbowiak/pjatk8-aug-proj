@@ -17,6 +17,9 @@ class AstRoot* root;
 %locations
 
 %union {
+	int ival;
+	bool bval;
+
 	class Node* node;
 	class StatementNode* statement_node;
 	class ExpressionNode* expression_node;
@@ -26,11 +29,14 @@ class AstRoot* root;
 %type <statement_node> statements
 %type <expression_node> expression
 
+
+%token <bval> TRUE FALSE
+%token <ival> NUMBER
+
 %token STOP
 %token STATEMENT_SEPARATOR BODY_OPEN BODY_CLOSE
 %token LET ASSIGN OF_TYPE ASSERT
 %token IF ELSE WHILE
-%token TRUE FALSE NUMBER
 %token IDENTIFIER
 %token PLUS MINUS MULTIPLY DIVIDE MODULO 
 %token EQUAL NOT_EQUAL LESS_THAN MORE_THAN LESS_EQUAL MORE_EQUAL
@@ -46,7 +52,7 @@ class AstRoot* root;
 %%
 
 program:
-	statements								{ root = new AstRoot($1); root->execute(); }
+	statements								{ root = new AstRoot($1); root->print_to_console(); root->execute(); }
 	;
 
 body:
@@ -91,9 +97,9 @@ expression:
 	| expression LOGIC_OR expression		{ $$ = new BinaryOperationNode(LogicOperation::Or, $1, $3); }
 	| expression LOGIC_XOR expression		{ $$ = new BinaryOperationNode(LogicOperation::Xor, $1, $3); }
 
-	| TRUE									{ $$ = new LiteralNode(Value(true)); }
-	| FALSE									{ $$ = new LiteralNode(Value(false)); }
-	| NUMBER								{ $$ = new LiteralNode(Value(1)); /*TODO*/ }
+	| TRUE									{ $$ = new LiteralNode(Value($1)); }
+	| FALSE									{ $$ = new LiteralNode(Value($1)); }
+	| NUMBER								{ $$ = new LiteralNode(Value($1)); }
 
 	| IDENTIFIER							{ $$ = new VariableReferenceNode("SomeReference"); /*TODO*/ }
 	;

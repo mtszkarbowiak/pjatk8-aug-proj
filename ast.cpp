@@ -351,7 +351,7 @@ void AstRoot::print_to_console()
 	std::stringbuf buffer{};
 	this->print(buffer, 0);
 
-	std::cout << buffer.str();
+	std::cout << buffer.str() << "\n";
 }
 
 void LiteralNode::print(std::stringbuf& buf, const int32_t depth) const
