@@ -168,13 +168,12 @@ public:
 	~LiteralNode() override = default;
 };
 
-
-class UnaryExpressionNode final : public ExpressionNode
+class UnaryOperationNode final : public ExpressionNode
 {
 public:
 	enum class Operator { Minus, Not };
 
-	explicit UnaryExpressionNode(Operator op, ExpressionNode* child);
+	explicit UnaryOperationNode(Operator op, ExpressionNode* child);
 
 	auto evaluate(const ExecutionScopedState&) -> Value override;
 
@@ -186,7 +185,7 @@ private:
 	std::unique_ptr<ExpressionNode> child;
 };
 
-class BinaryExpressionNode final : public ExpressionNode
+class BinaryOperationNode final : public ExpressionNode
 {
 public:
 	using OperationVariant = std::variant<
@@ -194,7 +193,7 @@ public:
 		LogicOperation,
 		ComparisonOperation>;
 
-	explicit BinaryExpressionNode(
+	explicit BinaryOperationNode(
 		OperationVariant op,
 		ExpressionNode* left,
 		ExpressionNode* right
@@ -210,7 +209,6 @@ private:
 	std::unique_ptr<ExpressionNode> right_child;
 };
 
-
 class VariableReferenceNode final : public ExpressionNode
 {
 	std::string name;
@@ -223,12 +221,13 @@ public:
 	auto evaluate(const ExecutionScopedState&) -> Value override;
 };
 
+
 class StatementNode : public AstNode
 {
 public:
 	explicit StatementNode();
 
-	// virtual void execute(ExecutionContext& context) const = 0; //TODO
+	virtual void execute(ExecutionScopedState&) const = 0;
 
 	~StatementNode() override = default;
 };

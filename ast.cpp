@@ -201,7 +201,7 @@ LiteralNode::LiteralNode(Value&& value)
 	, value(value)
 {
 }
-UnaryExpressionNode::UnaryExpressionNode(
+UnaryOperationNode::UnaryOperationNode(
 	const Operator op,
 	ExpressionNode* child)
 	: ExpressionNode()
@@ -210,7 +210,7 @@ UnaryExpressionNode::UnaryExpressionNode(
 {
 }
 
-BinaryExpressionNode::BinaryExpressionNode(
+BinaryOperationNode::BinaryOperationNode(
 	const OperationVariant op,
 	ExpressionNode* left,
 	ExpressionNode* right)
@@ -234,7 +234,7 @@ auto LiteralNode::evaluate(const ExecutionScopedState& execution_scoped_state) -
 	return this->value;
 }
 
-auto UnaryExpressionNode::evaluate(const ExecutionScopedState& execution_scoped_state) -> Value
+auto UnaryOperationNode::evaluate(const ExecutionScopedState& execution_scoped_state) -> Value
 {
 	const Value child_value = this->child->evaluate(execution_scoped_state);
 
@@ -243,7 +243,7 @@ auto UnaryExpressionNode::evaluate(const ExecutionScopedState& execution_scoped_
 	return result;
 }
 
-auto BinaryExpressionNode::evaluate(const ExecutionScopedState& execution_scoped_state) -> Value
+auto BinaryOperationNode::evaluate(const ExecutionScopedState& execution_scoped_state) -> Value
 {
 	ValueVisitors::BinaryOperation visitor;
 
@@ -287,14 +287,14 @@ void LiteralNode::print(std::stringbuf& buf, const int32_t depth) const
 	this->value.handle_by_visitor(ValueVisitors::ValuePrinter{ &buf });
 }
 
-void UnaryExpressionNode::print(std::stringbuf& buf, const int32_t depth) const
+void UnaryOperationNode::print(std::stringbuf& buf, const int32_t depth) const
 {
 	print_padding(buf, depth);
 
 	this->child->print(buf, depth + 1);
 }
 
-void BinaryExpressionNode::print(std::stringbuf& buf, const int32_t depth) const
+void BinaryOperationNode::print(std::stringbuf& buf, const int32_t depth) const
 {
 	print_padding(buf, depth);
 
