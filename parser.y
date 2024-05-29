@@ -17,14 +17,18 @@ void yyerror(const char *s);
 %define parse.error detailed
 %locations
 
+%code requires {
+	#include "ast.h"
+}
+
 %union {
-	class AstNode* node;
+	class Node* node;
 	class StatementNode* statement_node;
 	class ExpressionNode* expression_node;
 }
 
-%type <node> statement
-%type <node> expression
+%type <statement_node> statement
+%type <expression_node> expression
 
 %token STOP
 %token STATEMENT_SEPARATOR BODY_OPEN BODY_CLOSE
@@ -73,23 +77,26 @@ statement:
 
 expression:
 	'(' expression ')'
-	| expression MULTIPLY expression
-	| expression DIVIDE expression
-	| expression PLUS expression
-	| expression MINUS expression
-	| expression MODULO expression
-	| expression EQUAL expression
-	| expression NOT_EQUAL expression
-	| expression LESS_THAN expression
-	| expression MORE_THAN expression
-	| expression LESS_EQUAL expression
-	| expression MORE_EQUAL expression
-	| expression LOGIC_AND expression
-	| expression LOGIC_OR expression
-	| expression LOGIC_XOR expression
-	| TRUE									{ $$ = LiteralNode::new_boolean(nullptr, true); }
-	| FALSE
-	| NUMBER
+	| expression MULTIPLY expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ArithmeticOperator::Multiplication, $1, $3); }
+	| expression DIVIDE expression			{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ArithmeticOperator::Division, $1, $3); }
+	| expression PLUS expression			{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ArithmeticOperator::Addition, $1, $3); }
+	| expression MINUS expression			{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ArithmeticOperator::Substraction, $1, $3); }
+	| expression MODULO expression			{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ArithmeticOperator::Modulo, $1, $3); }
+
+	| expression EQUAL expression			{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ComparisonOperator::Equality, $1, $3); }
+	| expression NOT_EQUAL expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ComparisonOperator::Inequality, $1, $3); }
+	| expression LESS_THAN expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ComparisonOperator::Less, $1, $3); }
+	| expression MORE_THAN expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ComparisonOperator::More, $1, $3); }
+	| expression LESS_EQUAL expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ComparisonOperator::LessOrEqual, $1, $3); }
+	| expression MORE_EQUAL expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ComparisonOperator::MoreOrEqual, $1, $3); }
+
+	| expression LOGIC_AND expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::LogicOperator::And, $1, $3); }
+	| expression LOGIC_OR expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::LogicOperator::Or, $1, $3); }
+	| expression LOGIC_XOR expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::LogicOperator::Xor, $1, $3); }
+
+	| TRUE									{ $$ = new LiteralNode(true); }
+	| FALSE									{ $$ = new LiteralNode(false); }
+	| NUMBER								{ $$ = new LiteralNode(1); /*TODO*/ }
 	| IDENTIFIER
 	;
 %%

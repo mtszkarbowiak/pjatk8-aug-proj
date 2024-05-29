@@ -59,13 +59,6 @@ void ExecutionContext::declare_variable(Variable&& variable)
 
 
 
-AstNode::AstNode(AstNode* parent)
-	: parent(parent)
-{
-	if (!parent) {
-		throw std::runtime_error("Every node must have a parent.");
-	}
-}
 
 void AstNode::print_padding(std::stringbuf& buf, const int32_t depth) const
 {
@@ -74,49 +67,40 @@ void AstNode::print_padding(std::stringbuf& buf, const int32_t depth) const
 	}
 }
 
-auto AstNode::get_parent() const -> AstNode*
-{
-	return parent;
-}
-
-void ExpressionNode::ensure_exists(const ExpressionNode* potential_child) const
-{
-	if (potential_child == nullptr) {
-		throw std::runtime_error("The child does not exist.");
-	}
-}
-
-void ExpressionNode::ensure_parent(const ExpressionNode& potential_child) const
-{
-	if (potential_child.get_parent() != this) {
-		throw std::runtime_error("Attaching a node requires its child to already know its parent.");
-	}
-}
 
 
-LiteralNode::LiteralNode(ExpressionNode* expression, std::any&& value)
-	: AstNode(expression)
-	, value(std::move(value))
-	, expression(expression)
+LiteralNode::LiteralNode(NumericalVar numerical_value)
+	: ExpressionNode()
+	, value(numerical_value)
 {
-	if (!this->value.has_value()) {
-		throw std::runtime_error("Literal must have a value.");
-	}
 }
 
-auto LiteralNode::new_numerical(ExpressionNode* expression, NumericalVar value) -> LiteralNode*
+LiteralNode::LiteralNode(BooleanVar boolean_value)
+	: ExpressionNode()
+	, value(boolean_value)
 {
-	auto result = new LiteralNode(expression, value);
-	//TODO
-	return result;
 }
 
-auto LiteralNode::new_boolean(ExpressionNode* expression, BooleanVar value) -> LiteralNode*
+UnaryExpressionNode::UnaryExpressionNode(
+	const Operator op,
+	ExpressionNode* child)
+	: ExpressionNode()
+	, operator_(op)
+	, child(ExpressionNodePtr(child))
 {
-	auto result = new LiteralNode(expression, value);
-	//TODO
-	return result;
 }
+
+BinaryExpressionNode::BinaryExpressionNode(
+	const OperatorVariant op,
+	ExpressionNode* left,
+	ExpressionNode* right)
+	: ExpressionNode()
+	, operator_(op)
+	, left_child(ExpressionNodePtr(left))
+	, right_child(ExpressionNodePtr(right))
+{
+}
+
 
 
 void LiteralNode::print(std::stringbuf& buf, const int32_t depth) const
@@ -128,7 +112,7 @@ void LiteralNode::print(std::stringbuf& buf, const int32_t depth) const
 		const std::string name = this->value.type().name();
 		buf.sputn(name.c_str(), name.length());
 	}
-	else 
+	else
 	{
 		constexpr char null_info[] = "<null>";
 		buf.sputn(null_info, std::size(null_info));
@@ -139,8 +123,6 @@ void UnaryExpressionNode::print(std::stringbuf& buf, const int32_t depth) const
 {
 	print_padding(buf, depth);
 
-	ensure_exists(this->child);
-
 	this->child->print(buf, depth + 1);
 }
 
@@ -148,31 +130,6 @@ void BinaryExpressionNode::print(std::stringbuf& buf, const int32_t depth) const
 {
 	print_padding(buf, depth);
 
-	ensure_exists(this->left_child);
-	ensure_exists(this->right_child);
-
 	this->left_child->print(buf, depth + 1);
 	this->right_child->print(buf, depth + 1);
-}
-
-
-void UnaryExpressionNode::attach(ExpressionNode& child)
-{
-	ensure_parent(child);
-
-	this->child = &child;
-}
-
-void BinaryExpressionNode::attach_left(ExpressionNode& left_child)
-{
-	ensure_parent(left_child);
-
-	this->left_child = &left_child;
-}
-
-void BinaryExpressionNode::attach_right(ExpressionNode& right_child)
-{
-	ensure_parent(right_child);
-
-	this->right_child = &right_child;
 }

@@ -1,9 +1,12 @@
 #pragma once
 
 #include <any>
+#include <memory>
 #include <string>
 #include <variant>
 #include <vector>
+
+#include "ast.h"
 
 
 using NumericalVar = int32_t;
@@ -44,6 +47,7 @@ public:
 };
 
 
+
 class ExecutionContext final
 {
 	std::vector<Variable> variables;
@@ -55,30 +59,22 @@ public:
 };
 
 
+
+using NodePtr = std::unique_ptr<class AstNode>;
+using ExpressionNodePtr = std::unique_ptr<class ExpressionNode>;
+using StatementNodePtr = std::unique_ptr<class StatementNode>;
+
+
 /// Atomic element of AST.
 class AstNode
 {
-	AstNode* parent;
-
 protected:
-	explicit AstNode(AstNode* parent);
-
 	virtual void print_padding(std::stringbuf& buf, int32_t depth = 0) const;
 
 public:
 	virtual ~AstNode() = default;
 
 	virtual void print(std::stringbuf& buf, int32_t depth = 0) const = 0;
-
-	[[nodiscard]] auto get_parent() const -> AstNode*;
-};
-
-
-/// Node that can be executed.
-class StatementNode : public AstNode
-{
-public:
-	~StatementNode() override = default;
 };
 
 
@@ -95,16 +91,13 @@ public:
 };
 
 /// Atomic object of evaluation.
-class LiteralNode final : public AstNode
+class LiteralNode final : public ExpressionNode
 {
 	std::any value;
-	ExpressionNode* expression;
-
-	explicit LiteralNode(ExpressionNode* expression, std::any&& value);
-
+	
 public:
-	static auto new_numerical(ExpressionNode* expression, NumericalVar value) -> LiteralNode*;
-	static auto new_boolean(ExpressionNode* expression, BooleanVar value) -> LiteralNode*;
+	explicit LiteralNode(NumericalVar numerical_value);
+	explicit LiteralNode(BooleanVar boolean_value);
 
 	auto print(std::stringbuf& buf, int32_t depth) const -> void override;
 
@@ -112,29 +105,22 @@ public:
 };
 
 
-class UnaryExpressionNode : public ExpressionNode
+class UnaryExpressionNode final : public ExpressionNode
 {
 public:
-	enum class Operator
-	{
-		Minus,
-		Not,
-	};
+	enum class Operator { Minus, Not };
+
+	explicit UnaryExpressionNode(Operator op, ExpressionNode* child);
+
+	void print(std::stringbuf& buf, int32_t depth) const override;
 
 
 private:
-	Operator _operator;
-	ExpressionNode* child;
-
-
-public:
-	void print(std::stringbuf& buf, int32_t depth) const override;
-
-	/// Modifies child pointer. Note: Its parent must already be pointing to the parent (this).
-	void attach(ExpressionNode& child);
+	Operator operator_;
+	ExpressionNodePtr child;
 };
 
-class BinaryExpressionNode : public ExpressionNode
+class BinaryExpressionNode final : public ExpressionNode
 {
 public:
 	enum class ArithmeticOperator
@@ -142,7 +128,7 @@ public:
 		Addition,
 		Substraction,
 		Multiplication,
-		Divison,
+		Division,
 		Modulo,
 	};
 
@@ -153,21 +139,43 @@ public:
 		Xor,
 	};
 
-	using OperatorVariant = std::variant<ArithmeticOperator, LogicOperator>;
+	enum class ComparisonOperator
+	{
+		Equality,
+		Inequality,
+		Less,
+		LessOrEqual,
+		More,
+		MoreOrEqual,
+	};
+
+	using OperatorVariant = std::variant<
+		ArithmeticOperator,
+		LogicOperator,
+		ComparisonOperator>;
+
+
+	explicit BinaryExpressionNode(
+		OperatorVariant op,
+		ExpressionNode* left,
+		ExpressionNode* right
+	);
+
+	void print(std::stringbuf& buf, int32_t depth) const override;
 
 
 private:
-	OperatorVariant _operator;
-	ExpressionNode* left_child;
-	ExpressionNode* right_child;
+	OperatorVariant operator_;
+	ExpressionNodePtr left_child;
+	ExpressionNodePtr right_child;
+};
 
 
+/// Node that can be executed.
+class StatementNode : public AstNode
+{
 public:
-	void print(std::stringbuf& buf, int32_t depth) const override;
+	explicit StatementNode(std::vector<ExpressionNodePtr> expressions);
 
-	/// Modifies left child pointer. Note: Its parent must already be pointing to the parent (this).
-	void attach_left(ExpressionNode& left_child);
-
-	/// Modifies right child pointer. Note: Its parent must already be pointing to the parent (this).
-	void attach_right(ExpressionNode& right_child);
+	~StatementNode() override = default;
 };
