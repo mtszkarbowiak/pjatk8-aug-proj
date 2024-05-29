@@ -9,6 +9,8 @@
 int yylex(void);
 void yyerror(const char *s);
 
+class AstRoot* root;
+
 %}
 
 %define parse.error detailed
@@ -21,6 +23,7 @@ void yyerror(const char *s);
 }
 
 %type <statement_node> statement
+%type <statement_node> statements
 %type <expression_node> expression
 
 %token STOP
@@ -43,7 +46,7 @@ void yyerror(const char *s);
 %%
 
 program:
-	statements
+	statements								{ root = new AstRoot($1); root->execute(); }
 	;
 
 body:

@@ -306,9 +306,49 @@ void ResultNode::execute(ExecutionScopedState& execution_scoped_state) const
 
 void AstNode::print_padding(std::stringbuf& buf, const int32_t depth) const
 {
+	buf.sputn("\n", 1);
 	for (int i = 0; i < depth; ++i) {
 		buf.sputn(" ", 1);
 	}
+}
+
+AstRoot::AstRoot(StatementNode* head_statement)
+	: head_statement(head_statement)
+{
+}
+
+void AstRoot::execute()
+{
+	ExecutionScopedState execution_state;
+	this->head_statement->execute(execution_state);
+	auto result = execution_state.get_result();
+
+	if (result.has_value()) {
+		std::stringbuf buf;
+		ValueVisitors::ValuePrinter printer;
+		printer.target = &buf;
+
+		result.value().handle_by_visitor(printer);
+		std::cout << "Executed with result: " << buf.str() << "\n";
+
+	} else {
+		std::cout << "Executed without result.\n";
+	}
+}
+
+void AstRoot::print(std::stringbuf& buf, int32_t depth) const
+{
+	buf.sputn("Tree Root", 9);
+
+	this->head_statement->print(buf, 0);
+}
+
+void AstRoot::print_to_console()
+{
+	std::stringbuf buffer{};
+	this->print(buffer, 0);
+
+	std::cout << buffer.str();
 }
 
 void LiteralNode::print(std::stringbuf& buf, const int32_t depth) const

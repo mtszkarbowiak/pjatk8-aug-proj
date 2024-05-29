@@ -7,6 +7,11 @@
 #include <vector>
 
 
+class AstNode;
+class StatementNode;
+class ExpressionNode;
+
+
 class Value final
 {
 public:
@@ -142,6 +147,22 @@ public:
 	virtual ~AstNode() = default;
 
 	virtual void print(std::stringbuf& buf, int32_t depth = 0) const = 0;
+};
+
+class AstRoot final : public AstNode
+{
+	std::unique_ptr<StatementNode> head_statement;
+
+public:
+	explicit AstRoot(StatementNode*);
+
+
+	void execute();
+
+
+	void print(std::stringbuf& buf, int32_t depth) const override;
+
+	void print_to_console();
 };
 
 
