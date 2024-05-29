@@ -1,38 +1,56 @@
 #pragma once
 
-#include <any>
 #include <memory>
 #include <string>
 #include <variant>
 #include <vector>
 
 
-using NumericalVar = int32_t;
-using BooleanVar = bool;
-using TextVar = std::string;
+class Value final
+{
+public:
+	using Logic = bool;
+	using Number = int32_t;
+	using Text = std::string;
 
+private:
+	std::variant<Logic, Number, Text> value;
+
+public:
+	explicit Value() = default;
+
+	explicit Value(Logic value);
+	explicit Value(Number value);
+	explicit Value(Text text);
+
+	~Value() = default;
+
+	Value(const Value&) = default;
+	Value(Value&&) noexcept = default;
+
+	auto operator=(const Value&) -> Value& = default;
+	auto operator=(Value&&) noexcept -> Value& = default;
+
+	template<typename TVisitor>
+	void handle(TVisitor visitor) { std::visit(visitor, this->value); }
+	template<typename TVisitor>
+	void handle(TVisitor visitor) const { std::visit(visitor, this->value); }
+};
 
 class Variable final
 {
 	std::string name;
-	std::any value;
+	Value value;
 
 public:
 	[[nodiscard]]
 	auto get_name() const -> const std::string&;
 
 	[[nodiscard]]
-	auto get_value() const -> const std::any&;
+	auto get_value() const -> const Value&;
 
 	[[nodiscard]]
-	auto get_value() -> std::any&;
-
-	template<typename T>
-	[[nodiscard]]
-	auto is_type() const -> bool
-	{
-		return typeid(T) == value.type();
-	}
+	auto get_value() -> Value&;
 };
 
 
@@ -41,7 +59,9 @@ class ExecutionScopedState final
 	std::vector<Variable> variables;
 
 public:
-	auto try_get_var_value(std::string_view name) -> std::any*;
+	auto try_get_var_value(std::string_view name) -> Value*;
+
+	auto try_get_var_value(std::string_view name) const -> const Value*;
 
 	void declare_variable(Variable&& variable);
 };
@@ -77,20 +97,22 @@ protected:
 	void ensure_parent(const ExpressionNode&) const;
 
 public:
+	virtual auto evaluate(const ExecutionScopedState&) -> Value = 0; //TODO
+
 	~ExpressionNode() override = default;
 };
 
 class LiteralNode final : public ExpressionNode
 {
-	std::any value;
+	Value value;
+	
 	
 public:
-	explicit LiteralNode(NumericalVar numerical_value);
-	explicit LiteralNode(BooleanVar boolean_value);
+	explicit LiteralNode(Value&& value);
+
+	auto evaluate(const ExecutionScopedState&) -> Value override;
 
 	auto print(std::stringbuf& buf, int32_t depth) const -> void override;
-
-	// virtual auto evaluate() -> std::any = 0; //TODO
 
 	~LiteralNode() override = default;
 };
@@ -102,6 +124,8 @@ public:
 	enum class Operator { Minus, Not };
 
 	explicit UnaryExpressionNode(Operator op, ExpressionNode* child);
+
+	auto evaluate(const ExecutionScopedState&) -> Value override;
 
 	void print(std::stringbuf& buf, int32_t depth) const override;
 
@@ -152,8 +176,9 @@ public:
 		ExpressionNode* right
 	);
 
-	void print(std::stringbuf& buf, int32_t depth) const override;
+	auto evaluate(const ExecutionScopedState&) -> Value override;
 
+	void print(std::stringbuf& buf, int32_t depth) const override;
 
 private:
 	OperatorVariant operator_;
@@ -170,6 +195,8 @@ public:
 	explicit VariableReferenceNode(std::string&& name);
 
 	void print(std::stringbuf& buf, int32_t depth) const override;
+
+	auto evaluate(const ExecutionScopedState&) -> Value override;
 };
 
 class StatementNode : public AstNode

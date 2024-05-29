@@ -88,9 +88,9 @@ expression:
 	| expression LOGIC_OR expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::LogicOperator::Or, $1, $3); }
 	| expression LOGIC_XOR expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::LogicOperator::Xor, $1, $3); }
 
-	| TRUE									{ $$ = new LiteralNode(true); }
-	| FALSE									{ $$ = new LiteralNode(false); }
-	| NUMBER								{ $$ = new LiteralNode(1); /*TODO*/ }
+	| TRUE									{ $$ = new LiteralNode(Value(true)); }
+	| FALSE									{ $$ = new LiteralNode(Value(false)); }
+	| NUMBER								{ $$ = new LiteralNode(Value(1)); /*TODO*/ }
 
 	| IDENTIFIER							{ $$ = new VariableReferenceNode("SomeReference"); /*TODO*/ }
 	;
