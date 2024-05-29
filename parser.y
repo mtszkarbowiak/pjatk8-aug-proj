@@ -77,6 +77,7 @@ statement:
 
 expression:
 	'(' expression ')'
+
 	| expression MULTIPLY expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ArithmeticOperator::Multiplication, $1, $3); }
 	| expression DIVIDE expression			{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ArithmeticOperator::Division, $1, $3); }
 	| expression PLUS expression			{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ArithmeticOperator::Addition, $1, $3); }
@@ -97,6 +98,7 @@ expression:
 	| TRUE									{ $$ = new LiteralNode(true); }
 	| FALSE									{ $$ = new LiteralNode(false); }
 	| NUMBER								{ $$ = new LiteralNode(1); /*TODO*/ }
-	| IDENTIFIER
+
+	| IDENTIFIER							{ $$ = new VariableReferenceNode("SomeReference"); /*TODO*/ }
 	;
 %%

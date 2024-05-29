@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ast.h"
+#include "ast.h"
 
 
 using NumericalVar = int32_t;
@@ -169,6 +170,18 @@ private:
 	ExpressionNodePtr left_child;
 	ExpressionNodePtr right_child;
 };
+
+
+class VariableReferenceNode final : public ExpressionNode
+{
+	std::string name;
+
+public:
+	explicit VariableReferenceNode(std::string&& name);
+
+	void print(std::stringbuf& buf, int32_t depth) const override;
+};
+
 
 
 /// Node that can be executed.
