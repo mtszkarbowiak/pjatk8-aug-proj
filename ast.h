@@ -102,10 +102,15 @@ enum class ComparisonOperation
 
 class ExecutionScopedState final
 {
+	ExecutionScopedState* parent_state{};
 	std::vector<Variable> variables;
 	std::optional<Value> result;
 
 public:
+	explicit ExecutionScopedState() = default;
+
+	explicit ExecutionScopedState(ExecutionScopedState* parent_state);
+
 	auto try_get_var_value(std::string_view name) -> Value*;
 
 	auto try_get_var_value(std::string_view name) const -> const Value*;
@@ -225,9 +230,21 @@ public:
 class StatementNode : public AstNode
 {
 public:
-	explicit StatementNode();
-
 	virtual void execute(ExecutionScopedState&) const = 0;
 
 	~StatementNode() override = default;
+};
+
+class ResultNode final : public StatementNode
+{
+	std::unique_ptr<ExpressionNode> result_expression;
+
+public:
+	explicit ResultNode(ExpressionNode* result_expression);
+
+	void execute(ExecutionScopedState&) const override;
+
+	void print(std::stringbuf& buf, int32_t depth) const override;
+
+	~ResultNode() override = default;
 };

@@ -58,7 +58,7 @@ statements:
 
 
 statement:
-	expression
+	expression								{ $$ = new ResultNode($1); }
 	| LET IDENTIFIER ASSIGN expression
 	| LET IDENTIFIER OF_TYPE IDENTIFIER ASSIGN expression
 	| IDENTIFIER ASSIGN expression 

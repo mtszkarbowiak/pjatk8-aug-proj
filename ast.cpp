@@ -140,6 +140,11 @@ auto get_var_name_predicate(std::string_view name)
 }
 
 
+ExecutionScopedState::ExecutionScopedState(ExecutionScopedState* parent_state)
+	: parent_state(parent_state)
+{
+}
+
 auto ExecutionScopedState::try_get_var_value(const std::string_view name) -> Value*
 {
 	auto result = std::find_if(
@@ -149,6 +154,13 @@ auto ExecutionScopedState::try_get_var_value(const std::string_view name) -> Val
 	);
 
 	const bool found = result != variables.end();
+
+	if (!found && parent_state) {
+		if (Value* parent_value = parent_state->try_get_var_value(name)) 
+		{
+			return parent_value;
+		}
+	}
 
 	return found ? (&result->get_value()) : nullptr;
 }
@@ -162,6 +174,13 @@ auto ExecutionScopedState::try_get_var_value(const std::string_view name) const 
 	);
 
 	const bool found = result != variables.end();
+
+	if (!found && parent_state) {
+		if (const Value* parent_value = parent_state->try_get_var_value(name))
+		{
+			return parent_value;
+		}
+	}
 
 	return found ? (&result->get_value()) : nullptr;
 }
@@ -227,6 +246,10 @@ VariableReferenceNode::VariableReferenceNode(std::string&& name)
 {
 }
 
+ResultNode::ResultNode(ExpressionNode* result_expression)
+	: result_expression(std::unique_ptr<ExpressionNode>(result_expression))
+{
+}
 
 
 auto LiteralNode::evaluate(const ExecutionScopedState& execution_scoped_state) -> Value
@@ -273,6 +296,14 @@ auto VariableReferenceNode::evaluate(const ExecutionScopedState& execution_scope
 }
 
 
+
+void ResultNode::execute(ExecutionScopedState& execution_scoped_state) const
+{
+	Value statement_result = this->result_expression->evaluate(execution_scoped_state);
+	execution_scoped_state.set_result(std::move(statement_result));
+}
+
+
 void AstNode::print_padding(std::stringbuf& buf, const int32_t depth) const
 {
 	for (int i = 0; i < depth; ++i) {
@@ -309,4 +340,14 @@ void VariableReferenceNode::print(std::stringbuf& buf, const int32_t depth) cons
 	constexpr char ref_info[] = "Ref: ";
 	buf.sputn(ref_info, std::size(ref_info));
 	buf.sputn(name.c_str(), name.length());
+}
+
+void ResultNode::print(std::stringbuf& buf, const int32_t depth) const
+{
+	print_padding(buf, depth);
+
+	constexpr char return_info[] = "Return";
+	buf.sputn(return_info, std::size(return_info));
+
+	this->result_expression->print(buf, depth + 1);
 }
