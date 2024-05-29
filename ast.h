@@ -32,9 +32,27 @@ public:
 	auto operator=(Value&&) noexcept -> Value& = default;
 
 	template<typename TVisitor>
-	void handle(TVisitor visitor) { std::visit(visitor, this->value); }
+	void handle_by_visitor(TVisitor visitor)
+	{
+		std::visit(visitor, this->value);
+	}
 	template<typename TVisitor>
-	void handle(TVisitor visitor) const { std::visit(visitor, this->value); }
+	void handle_by_visitor(TVisitor visitor) const
+	{
+		std::visit(visitor, this->value);
+	}
+
+	template<typename T>
+	auto try_get() -> T*
+	{
+		return std::get_if<T>(&value);
+	}
+
+	template<typename T>
+	auto try_get() const -> const T*
+	{
+		return std::get_if<T>(&value);
+	}
 };
 
 class Variable final
@@ -51,6 +69,33 @@ public:
 
 	[[nodiscard]]
 	auto get_value() -> Value&;
+};
+
+
+enum class ArithmeticOperation
+{
+	Addition,
+	Substraction,
+	Multiplication,
+	Division,
+	Modulo,
+};
+
+enum class LogicOperation
+{
+	And,
+	Or,
+	Xor,
+};
+
+enum class ComparisonOperation
+{
+	Equality,
+	Inequality,
+	Less,
+	LessOrEqual,
+	More,
+	MoreOrEqual,
 };
 
 
@@ -138,40 +183,13 @@ private:
 class BinaryExpressionNode final : public ExpressionNode
 {
 public:
-	enum class ArithmeticOperator
-	{
-		Addition,
-		Substraction,
-		Multiplication,
-		Division,
-		Modulo,
-	};
-
-	enum class LogicOperator
-	{
-		And,
-		Or,
-		Xor,
-	};
-
-	enum class ComparisonOperator
-	{
-		Equality,
-		Inequality,
-		Less,
-		LessOrEqual,
-		More,
-		MoreOrEqual,
-	};
-
-	using OperatorVariant = std::variant<
-		ArithmeticOperator,
-		LogicOperator,
-		ComparisonOperator>;
-
+	using OperationVariant = std::variant<
+		ArithmeticOperation,
+		LogicOperation,
+		ComparisonOperation>;
 
 	explicit BinaryExpressionNode(
-		OperatorVariant op,
+		OperationVariant op,
 		ExpressionNode* left,
 		ExpressionNode* right
 	);
@@ -181,7 +199,7 @@ public:
 	void print(std::stringbuf& buf, int32_t depth) const override;
 
 private:
-	OperatorVariant operator_;
+	OperationVariant operation_;
 	std::unique_ptr<ExpressionNode> left_child;
 	std::unique_ptr<ExpressionNode> right_child;
 };

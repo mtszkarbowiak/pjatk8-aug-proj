@@ -6,10 +6,28 @@
 #include <valarray>
 
 
-static void terminate_illegal_program(const std::string& reasoning) {
+void terminate_illegal_program(const std::string& reasoning) {
 	std::cerr << "An error occured during execution. Reason:\n" + reasoning + "\nProgram terminated.";
 	throw std::runtime_error("Illegal program can not be executed.");
 }
+
+template<typename T>
+auto get_value_casted(const Value* input, const char* error_msg) -> T
+{
+	T result;
+
+	if (const T* ptr = input->try_get<T>())
+	{
+		result = *ptr;
+	}
+	else
+	{
+		terminate_illegal_program(error_msg);
+	}
+
+	return result;
+}
+
 
 
 Value::Value(Logic value) : value(value) {}
@@ -35,7 +53,7 @@ auto Variable::get_value() -> Value&
 
 namespace ValueVisitors
 {
-	struct Printer final
+	struct ValuePrinter final
 	{
 		std::stringbuf* target;
 
@@ -56,10 +74,58 @@ namespace ValueVisitors
 		}
 	};
 
-
-	struct ValueArithmeticVisitor final
+	struct BinaryOperation
 	{
+		const Value* left_value;
+		const Value* right_value;
+		Value* result;
 
+		void operator()(ArithmeticOperation arithmetic_operation)
+		{
+			const Value::Number l = get_value_casted<Value::Number>(left_value, "Left operand must a number to execute arithmetic operation.");
+			const Value::Number r = get_value_casted<Value::Number>(right_value, "Right operand must a number to execute arithmetic operation.");
+
+			auto calc = [arithmetic_operation, l, r]() -> Value::Number
+			{
+				switch (arithmetic_operation) {
+					case ArithmeticOperation::Addition:			return l + r;
+					case ArithmeticOperation::Substraction:		return l - r;
+					case ArithmeticOperation::Multiplication:	return l * r;
+					case ArithmeticOperation::Division:			return l / r;
+					case ArithmeticOperation::Modulo:			return l % r;
+				}
+
+				terminate_illegal_program("Unknown arithmetic operation.");
+				return 0;
+			};
+
+			*result = Value(calc());
+		}
+
+		void operator()(LogicOperation logic_operation)
+		{
+			const Value::Logic l = get_value_casted<Value::Logic>(left_value, "Left operand must a boolean to execute arithmetic operation.");
+			const Value::Logic r = get_value_casted<Value::Logic>(right_value, "Right operand must a boolean to execute arithmetic operation.");
+
+			auto calc = [logic_operation, l, r]() -> Value::Number
+			{
+				switch (logic_operation) {
+					case LogicOperation::And:	return l && r;
+					case LogicOperation::Or:	return l || r;
+					case LogicOperation::Xor:	return l ^ r;
+				}
+
+				terminate_illegal_program("Unknown logic operation.");
+				return 0;
+			};
+
+			*result = Value(calc());
+		}
+
+		void operator()(ComparisonOperation comparison_operation)
+		{
+			terminate_illegal_program("Comparison operations are not yet supported.");
+		}
 	};
 }
 
@@ -132,11 +198,11 @@ UnaryExpressionNode::UnaryExpressionNode(
 }
 
 BinaryExpressionNode::BinaryExpressionNode(
-	const OperatorVariant op,
+	const OperationVariant op,
 	ExpressionNode* left,
 	ExpressionNode* right)
 	: ExpressionNode()
-	, operator_(op)
+	, operation_(op)
 	, left_child(std::unique_ptr<ExpressionNode>(left))
 	, right_child(std::unique_ptr<ExpressionNode>(right))
 {
@@ -166,10 +232,17 @@ auto UnaryExpressionNode::evaluate(const ExecutionScopedState& execution_scoped_
 
 auto BinaryExpressionNode::evaluate(const ExecutionScopedState& execution_scoped_state) -> Value
 {
+	ValueVisitors::BinaryOperation visitor;
+
+	Value result;
 	const Value left_value = this->left_child->evaluate(execution_scoped_state);
 	const Value right_value = this->right_child->evaluate(execution_scoped_state);
 
-	Value result = left_value; //TODO Add the handler
+	visitor.result = &result;
+	visitor.left_value = &left_value;
+	visitor.right_value = &right_value;
+
+	std::visit(visitor, this->operation_);
 
 	return result;
 }
@@ -198,7 +271,7 @@ void LiteralNode::print(std::stringbuf& buf, const int32_t depth) const
 {
 	print_padding(buf, depth);
 
-	this->value.handle(ValueVisitors::Printer{ &buf });
+	this->value.handle_by_visitor(ValueVisitors::ValuePrinter{ &buf });
 }
 
 void UnaryExpressionNode::print(std::stringbuf& buf, const int32_t depth) const

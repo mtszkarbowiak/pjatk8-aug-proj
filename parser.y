@@ -71,22 +71,22 @@ statement:
 expression:
 	'(' expression ')'
 
-	| expression MULTIPLY expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ArithmeticOperator::Multiplication, $1, $3); }
-	| expression DIVIDE expression			{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ArithmeticOperator::Division, $1, $3); }
-	| expression PLUS expression			{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ArithmeticOperator::Addition, $1, $3); }
-	| expression MINUS expression			{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ArithmeticOperator::Substraction, $1, $3); }
-	| expression MODULO expression			{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ArithmeticOperator::Modulo, $1, $3); }
+	| expression MULTIPLY expression		{ $$ = new BinaryExpressionNode(ArithmeticOperation::Multiplication, $1, $3); }
+	| expression DIVIDE expression			{ $$ = new BinaryExpressionNode(ArithmeticOperation::Division, $1, $3); }
+	| expression PLUS expression			{ $$ = new BinaryExpressionNode(ArithmeticOperation::Addition, $1, $3); }
+	| expression MINUS expression			{ $$ = new BinaryExpressionNode(ArithmeticOperation::Substraction, $1, $3); }
+	| expression MODULO expression			{ $$ = new BinaryExpressionNode(ArithmeticOperation::Modulo, $1, $3); }
 
-	| expression EQUAL expression			{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ComparisonOperator::Equality, $1, $3); }
-	| expression NOT_EQUAL expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ComparisonOperator::Inequality, $1, $3); }
-	| expression LESS_THAN expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ComparisonOperator::Less, $1, $3); }
-	| expression MORE_THAN expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ComparisonOperator::More, $1, $3); }
-	| expression LESS_EQUAL expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ComparisonOperator::LessOrEqual, $1, $3); }
-	| expression MORE_EQUAL expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::ComparisonOperator::MoreOrEqual, $1, $3); }
+	| expression EQUAL expression			{ $$ = new BinaryExpressionNode(ComparisonOperation::Equality, $1, $3); }
+	| expression NOT_EQUAL expression		{ $$ = new BinaryExpressionNode(ComparisonOperation::Inequality, $1, $3); }
+	| expression LESS_THAN expression		{ $$ = new BinaryExpressionNode(ComparisonOperation::Less, $1, $3); }
+	| expression MORE_THAN expression		{ $$ = new BinaryExpressionNode(ComparisonOperation::More, $1, $3); }
+	| expression LESS_EQUAL expression		{ $$ = new BinaryExpressionNode(ComparisonOperation::LessOrEqual, $1, $3); }
+	| expression MORE_EQUAL expression		{ $$ = new BinaryExpressionNode(ComparisonOperation::MoreOrEqual, $1, $3); }
 
-	| expression LOGIC_AND expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::LogicOperator::And, $1, $3); }
-	| expression LOGIC_OR expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::LogicOperator::Or, $1, $3); }
-	| expression LOGIC_XOR expression		{ $$ = new BinaryExpressionNode(BinaryExpressionNode::LogicOperator::Xor, $1, $3); }
+	| expression LOGIC_AND expression		{ $$ = new BinaryExpressionNode(LogicOperation::And, $1, $3); }
+	| expression LOGIC_OR expression		{ $$ = new BinaryExpressionNode(LogicOperation::Or, $1, $3); }
+	| expression LOGIC_XOR expression		{ $$ = new BinaryExpressionNode(LogicOperation::Xor, $1, $3); }
 
 	| TRUE									{ $$ = new LiteralNode(Value(true)); }
 	| FALSE									{ $$ = new LiteralNode(Value(false)); }
