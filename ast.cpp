@@ -61,16 +61,19 @@ namespace ValueVisitors
 			target->sputn(string.c_str(), string.length());
 		}
 
-		void operator()(Value::Logic) const {
-			print_literal("Logic");
+		void operator()(const Value::Logic boolean) const {
+			print_literal("Logic: ");
+			print_literal(boolean ? "True" : "False");
 		}
 
-		void operator()(Value::Number) const {
-			print_literal("Number");
+		void operator()(const Value::Number number) const {
+			print_literal("Number: ");
+			print_literal(std::to_string(number));
 		}
 
-		void operator()(Value::Text) const {
-			print_literal("Text");
+		void operator()(const Value::Text text) const {
+			print_literal("Text: ");
+			target->sputn(text.c_str(), text.length());
 		}
 	};
 
