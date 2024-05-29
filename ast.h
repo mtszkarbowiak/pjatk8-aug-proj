@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <variant>
 #include <vector>
@@ -102,6 +103,7 @@ enum class ComparisonOperation
 class ExecutionScopedState final
 {
 	std::vector<Variable> variables;
+	std::optional<Value> result;
 
 public:
 	auto try_get_var_value(std::string_view name) -> Value*;
@@ -109,6 +111,10 @@ public:
 	auto try_get_var_value(std::string_view name) const -> const Value*;
 
 	void declare_variable(Variable&& variable);
+
+	void set_result(Value&& value);
+
+	auto get_result() const -> const std::optional<Value>&;
 };
 
 

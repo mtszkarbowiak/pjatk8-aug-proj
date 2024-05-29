@@ -181,6 +181,19 @@ void ExecutionScopedState::declare_variable(Variable&& variable)
 	this->variables.emplace_back(std::move(variable));
 }
 
+void ExecutionScopedState::set_result(Value&& value)
+{
+	if (result.has_value()) {
+		terminate_illegal_program("The algorithm has already declared returned value.");
+	}
+
+	this->result.emplace(std::move(value));
+}
+
+auto ExecutionScopedState::get_result() const -> const std::optional<Value>&
+{
+	return this->result;
+}
 
 
 LiteralNode::LiteralNode(Value&& value)
