@@ -60,7 +60,7 @@
 ("||"|"or")     { return lu().feed(LOGIC_OR); }
 ("^"|"xor")     { return lu().feed(LOGIC_XOR); }
 
-[a-zA-Z_][a-zA-Z0-9_]*  { return lu().feed(IDENTIFIER, yytext); }
+[a-zA-Z_][a-zA-Z0-9_]*  { yylval.str = strdup(yytext); return lu().feed(IDENTIFIER, yytext); }
 
 "="             { return lu().feed(ASSIGN); }
 ":"             { return lu().feed(OF_TYPE); }

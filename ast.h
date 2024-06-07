@@ -6,12 +6,13 @@
 #include <variant>
 #include <vector>
 
-#include "ast.h"
-
 
 class AstNode;
 class StatementNode;
 class ExpressionNode;
+
+
+std::string str_to_cpp(const char* copy);
 
 
 class Value final
@@ -68,7 +69,12 @@ class Variable final
 	std::string name;
 	Value value;
 
+
+	Variable() = default;
+
 public:
+	explicit Variable(std::string name, Value init_value);
+
 	[[nodiscard]]
 	auto get_name() const -> const std::string&;
 
@@ -127,6 +133,8 @@ public:
 	void set_result(Value&& value);
 
 	auto get_result() const -> const std::optional<Value>&;
+
+	void print_summary();
 };
 
 
@@ -283,4 +291,18 @@ public:
 	void print(std::stringbuf& buf, int32_t depth) const override;
 
 	~ResultNode() override = default;
+};
+
+class VariableAssignmentNode final : public StatementNode
+{
+	std::string variable_name;
+	std::unique_ptr<ExpressionNode> expression;
+	bool is_reassignment;
+
+public:
+	explicit VariableAssignmentNode(std::string variable_name, ExpressionNode* expression, bool reassignment);
+
+	void print(std::stringbuf& buf, int32_t depth) const override;
+
+	void execute(ExecutionScopedState& context) const override;
 };

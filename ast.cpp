@@ -3,12 +3,18 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <utility>
 #include <valarray>
 
 
 void terminate_illegal_program(const std::string& reasoning) {
 	std::cerr << "An error occured during execution. Reason:\n" + reasoning + "\nProgram terminated.";
 	throw std::runtime_error("Illegal program can not be executed.");
+}
+
+void append_str_buf(std::stringbuf& buf, const std::string& str)
+{
+	buf.sputn(str.c_str(), static_cast<std::streamsize>(str.length()));
 }
 
 template<typename T>
@@ -29,11 +35,24 @@ auto get_value_casted(const Value* input, const char* error_msg) -> T
 }
 
 
+std::string str_to_cpp(const char* copy)
+{
+	std::string result{ copy };
+	delete[] (copy);
+	return result;
+}
 
 Value::Value(Logic value) : value(value) {}
 Value::Value(Number value) : value(value) {}
 Value::Value(Text text) : value(text) {}
 
+
+Variable::Variable(std::string name, Value init_value)
+	: name(std::move(name))
+	, value(std::move(init_value))
+{
+	
+}
 
 auto Variable::get_name() const -> const std::string&
 {
@@ -55,25 +74,18 @@ namespace ValueVisitors
 {
 	struct ValuePrinter final
 	{
-		std::stringbuf* target;
-
-		void print_literal(const std::string& string) const {
-			target->sputn(string.c_str(), string.length());
-		}
+		std::string* target;
 
 		void operator()(const Value::Logic boolean) const {
-			print_literal("Logic: ");
-			print_literal(boolean ? "True" : "False");
+			*target = "Logic: " + std::string(boolean ? "True" : "False");
 		}
 
 		void operator()(const Value::Number number) const {
-			print_literal("Number: ");
-			print_literal(std::to_string(number));
+			*target = "Number: " + std::to_string(number);
 		}
 
 		void operator()(const Value::Text text) const {
-			print_literal("Text: ");
-			target->sputn(text.c_str(), text.length());
+			*target = "Text: " + text;
 		}
 	};
 
@@ -217,6 +229,21 @@ auto ExecutionScopedState::get_result() const -> const std::optional<Value>&
 	return this->result;
 }
 
+void ExecutionScopedState::print_summary()
+{
+	for (const auto& variable : this->variables) {
+		std::string str;
+		ValueVisitors::ValuePrinter printer{ &str };
+		variable.get_value().handle_by_visitor(printer);
+		std::cout << variable.get_name() << " = " << str << "\n";
+	}
+}
+
+
+AstRoot::AstRoot(StatementNode* head_statement)
+	: head_statement(head_statement)
+{
+}
 
 BraceExpressionNode::BraceExpressionNode(ExpressionNode* braced_expression)
 	: braced_expression(std::unique_ptr<ExpressionNode>(braced_expression))
@@ -256,6 +283,17 @@ VariableReferenceNode::VariableReferenceNode(std::string&& name)
 
 ResultNode::ResultNode(ExpressionNode* result_expression)
 	: result_expression(std::unique_ptr<ExpressionNode>(result_expression))
+{
+}
+
+
+VariableAssignmentNode::VariableAssignmentNode(
+	std::string variable_name,
+	ExpressionNode* expression,
+	const bool reassignment)
+	: variable_name(std::move(variable_name))
+	, expression(std::unique_ptr<ExpressionNode>(expression))
+	, is_reassignment(reassignment)
 {
 }
 
@@ -325,11 +363,6 @@ void AstNode::print_padding(std::stringbuf& buf, const int32_t depth) const
 	}
 }
 
-AstRoot::AstRoot(StatementNode* head_statement)
-	: head_statement(head_statement)
-{
-}
-
 void AstRoot::execute()
 {
 	ExecutionScopedState execution_state;
@@ -337,17 +370,26 @@ void AstRoot::execute()
 	auto result = execution_state.get_result();
 
 	if (result.has_value()) {
-		std::stringbuf buf;
-		ValueVisitors::ValuePrinter printer;
-		printer.target = &buf;
+		std::string str;
+		ValueVisitors::ValuePrinter printer{ &str };
 
 		result.value().handle_by_visitor(printer);
-		std::cout << "Executed with result: " << buf.str() << "\n";
+		std::cout << "Executed with result: " << str << "\n";
 
 	} else {
 		std::cout << "Executed without result.\n";
 	}
+
+	execution_state.print_summary();
 }
+
+void VariableAssignmentNode::execute(ExecutionScopedState& context) const
+{
+	Value var_value = this->expression->evaluate(context);
+	Variable variable{ this->variable_name, std::move(var_value) };
+	context.declare_variable(std::move(variable));
+}
+
 
 void AstRoot::print(std::stringbuf& buf, int32_t depth) const
 {
@@ -367,14 +409,16 @@ void AstRoot::print_to_console()
 
 void BraceExpressionNode::print(std::stringbuf& buf, const int32_t depth) const
 {
-	this->braced_expression->print(buf, depth);
+	this->braced_expression->print(buf, depth + 1);
 }
 
 void LiteralNode::print(std::stringbuf& buf, const int32_t depth) const
 {
 	print_padding(buf, depth);
 
-	this->value.handle_by_visitor(ValueVisitors::ValuePrinter{ &buf });
+	std::string str;
+	this->value.handle_by_visitor(ValueVisitors::ValuePrinter{ &str });
+	append_str_buf(buf, str);
 }
 
 void UnaryOperationNode::print(std::stringbuf& buf, const int32_t depth) const
@@ -396,17 +440,28 @@ void VariableReferenceNode::print(std::stringbuf& buf, const int32_t depth) cons
 {
 	print_padding(buf, depth);
 
-	constexpr char ref_info[] = "Ref: ";
-	buf.sputn(ref_info, std::size(ref_info));
-	buf.sputn(name.c_str(), name.length());
+	append_str_buf(buf, "Ref: ");
+	append_str_buf(buf, name);
 }
 
 void ResultNode::print(std::stringbuf& buf, const int32_t depth) const
 {
 	print_padding(buf, depth);
 
-	constexpr char return_info[] = "Return";
-	buf.sputn(return_info, std::size(return_info));
+	append_str_buf(buf, "Return");
 
 	this->result_expression->print(buf, depth + 1);
+}
+
+void VariableAssignmentNode::print(std::stringbuf& buf, const int32_t depth) const
+{
+	print_padding(buf, depth);
+
+	if (is_reassignment) {
+		append_str_buf(buf, this->variable_name);
+		append_str_buf(buf, " := ...");
+	} else {
+		append_str_buf(buf, this->variable_name);
+		append_str_buf(buf, " = ...");
+	}
 }

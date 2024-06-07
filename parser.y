@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <string>
+
 #include "parser.tab.h"
 #include "ast.h"
 
@@ -19,6 +21,7 @@ class AstRoot* root;
 %union {
 	int ival;
 	bool bval;
+	char* str;
 
 	class Node* node;
 	class StatementNode* statement_node;
@@ -32,6 +35,7 @@ class AstRoot* root;
 
 %token <bval> TRUE FALSE
 %token <ival> NUMBER
+%token <str> IDENTIFIER
 
 %token STOP
 %token STATEMENT_SEPARATOR BODY_OPEN BODY_CLOSE
@@ -68,9 +72,8 @@ statements:
 
 statement:
 	expression								{ $$ = new ResultNode($1); }
-	| LET IDENTIFIER ASSIGN expression
-	| LET IDENTIFIER OF_TYPE IDENTIFIER ASSIGN expression
-	| IDENTIFIER ASSIGN expression 
+	| LET IDENTIFIER ASSIGN expression		{ $$ = new VariableAssignmentNode(str_to_cpp($2), $4, false); }
+	| IDENTIFIER ASSIGN expression			{ $$ = new VariableAssignmentNode(str_to_cpp($1), $3, true); }
 	| IF expression body
 	| IF expression body ELSE body
 	| WHILE expression body
@@ -101,6 +104,6 @@ expression:
 	| FALSE									{ $$ = new LiteralNode(Value($1)); }
 	| NUMBER								{ $$ = new LiteralNode(Value($1)); }
 
-	| IDENTIFIER							{ $$ = new VariableReferenceNode("SomeReference"); /*TODO*/ }
+	| IDENTIFIER							{ $$ = new VariableReferenceNode($1); }
 	;
 %%
