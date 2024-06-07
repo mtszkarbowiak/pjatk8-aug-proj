@@ -78,7 +78,7 @@ statement:
 	;
 
 expression:
-	'(' expression ')'
+	'(' expression ')'						{ $$ = new BraceExpressionNode($2); }
 
 	| expression MULTIPLY expression		{ $$ = new BinaryOperationNode(ArithmeticOperation::Multiplication, $1, $3); }
 	| expression DIVIDE expression			{ $$ = new BinaryOperationNode(ArithmeticOperation::Division, $1, $3); }

@@ -6,6 +6,8 @@
 #include <variant>
 #include <vector>
 
+#include "ast.h"
+
 
 class AstNode;
 class StatementNode;
@@ -177,6 +179,19 @@ public:
 	virtual auto evaluate(const ExecutionScopedState&) -> Value = 0; //TODO
 
 	~ExpressionNode() override = default;
+};
+
+class BraceExpressionNode final : public ExpressionNode
+{
+	std::unique_ptr<ExpressionNode> braced_expression;
+
+
+public:
+	explicit BraceExpressionNode(ExpressionNode* braced_expression);
+
+	void print(std::stringbuf& buf, int32_t depth) const override;
+
+	auto evaluate(const ExecutionScopedState&) -> Value override;
 };
 
 class LiteralNode final : public ExpressionNode

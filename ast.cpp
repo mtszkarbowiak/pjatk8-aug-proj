@@ -218,6 +218,11 @@ auto ExecutionScopedState::get_result() const -> const std::optional<Value>&
 }
 
 
+BraceExpressionNode::BraceExpressionNode(ExpressionNode* braced_expression)
+	: braced_expression(std::unique_ptr<ExpressionNode>(braced_expression))
+{
+}
+
 LiteralNode::LiteralNode(Value&& value)
 	: ExpressionNode()
 	, value(value)
@@ -254,6 +259,11 @@ ResultNode::ResultNode(ExpressionNode* result_expression)
 {
 }
 
+
+auto BraceExpressionNode::evaluate(const ExecutionScopedState& execution_scoped_state) -> Value
+{
+	return braced_expression->evaluate(execution_scoped_state);
+}
 
 auto LiteralNode::evaluate(const ExecutionScopedState& execution_scoped_state) -> Value
 {
@@ -311,7 +321,7 @@ void AstNode::print_padding(std::stringbuf& buf, const int32_t depth) const
 {
 	buf.sputn("\n", 1);
 	for (int i = 0; i < depth; ++i) {
-		buf.sputn(" ", 1);
+		buf.sputn("-", 1);
 	}
 }
 
@@ -352,6 +362,12 @@ void AstRoot::print_to_console()
 	this->print(buffer, 0);
 
 	std::cout << buffer.str() << "\n";
+}
+
+
+void BraceExpressionNode::print(std::stringbuf& buf, const int32_t depth) const
+{
+	this->braced_expression->print(buf, depth);
 }
 
 void LiteralNode::print(std::stringbuf& buf, const int32_t depth) const
