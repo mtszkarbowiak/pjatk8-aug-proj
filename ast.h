@@ -6,6 +6,9 @@
 #include <variant>
 #include <vector>
 
+#include "ast.h"
+#include "ast.h"
+
 
 class AstNode;
 class StatementNode;
@@ -339,4 +342,23 @@ public:
 	void print(std::stringbuf& buf, int32_t depth) const override;
 
 	void execute(ExecutionScopedState& context) const override;
+};
+
+class ConditionalStatementNode final : public StatementNode
+{
+	std::unique_ptr<ExpressionNode> condition;
+	std::unique_ptr<StatementNode> statement;
+	bool repeating;
+
+	ConditionalStatementNode() = default;
+
+public:
+	explicit ConditionalStatementNode(
+		ExpressionNode* condition, 
+		StatementNode* statement,
+		bool repeating);
+
+	void print(std::stringbuf& buf, int32_t depth) const override;
+
+	void execute(ExecutionScopedState&) const override;
 };

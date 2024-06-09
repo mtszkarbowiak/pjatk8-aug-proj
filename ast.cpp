@@ -339,6 +339,17 @@ BodyNode::BodyNode(StatementNode* body_statement)
 {
 }
 
+ConditionalStatementNode::ConditionalStatementNode(
+	ExpressionNode* condition,
+	StatementNode* statement,
+	const bool repeating)
+	: condition(std::unique_ptr<ExpressionNode>(condition))
+	, statement(std::unique_ptr<StatementNode>(statement))
+	, repeating(repeating)
+{
+}
+
+
 
 auto BraceExpressionNode::evaluate(const ExecutionScopedState& execution_scoped_state) -> Value
 {
@@ -457,6 +468,39 @@ void BodyNode::execute(ExecutionScopedState& context) const
 	this->body_statement->execute(context);
 }
 
+void ConditionalStatementNode::execute(ExecutionScopedState& context) const
+{
+	auto should_continue = [&]() -> bool
+	{
+		Value val = this->condition->evaluate(context);
+		const bool* value_ptr = val.try_get<bool>();
+
+		if (value_ptr == nullptr) {
+			terminate_illegal_program("Expression does not evaluate to boolean.");
+		}
+
+		return *value_ptr;
+	};
+
+	constexpr auto iteration_cap = 1 << 13;
+	const auto max_iteration_count = this->repeating ? iteration_cap : 1;
+
+	for (int i = 0; i < max_iteration_count; ++i) 
+	{
+		if (!should_continue()) {
+			return;
+		}
+
+		this->statement->execute(context);
+	}
+
+	if (this->repeating) {
+		terminate_illegal_program("Iteration count exceeded the limit.");
+	}
+}
+
+
+
 
 void AstRoot::print(std::stringbuf& buf, int32_t depth) const
 {
@@ -550,4 +594,15 @@ void BodyNode::print(std::stringbuf& buf, const int32_t depth) const
 	append_str_buf(buf, "Body");
 
 	this->body_statement->print(buf, depth + 1);
+}
+
+void ConditionalStatementNode::print(std::stringbuf& buf, const int32_t depth) const
+{
+	print_padding(buf, depth);
+
+	append_str_buf(buf, "Conditional");
+
+	this->condition->print(buf, depth + 1);
+
+	this->condition->print(buf, depth + 1);
 }

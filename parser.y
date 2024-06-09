@@ -30,6 +30,7 @@ class AstRoot* root;
 
 %type <statement_node> statement
 %type <statement_node> statements
+%type <statement_node> body
 %type <expression_node> expression
 
 
@@ -60,7 +61,7 @@ program:
 	;
 
 body:
-	BODY_OPEN statements BODY_CLOSE
+	BODY_OPEN statements BODY_CLOSE			{ $$ = new BodyNode($2); }
 	;
 
 statements:
@@ -73,10 +74,8 @@ statement:
 	expression								{ $$ = new ResultNode($1); }
 	| LET IDENTIFIER ASSIGN expression		{ $$ = new VariableAssignmentNode(str_to_cpp($2), $4, false); }
 	| IDENTIFIER ASSIGN expression			{ $$ = new VariableAssignmentNode(str_to_cpp($1), $3, true); }
-	| IF expression body
-	| IF expression body ELSE body
-	| WHILE expression body
-	| ASSERT expression
+	| IF expression body					{ $$ = new ConditionalStatementNode($2, $3, false); }
+	| WHILE expression body					{ $$ = new ConditionalStatementNode($2, $3, true); }
 	;
 
 expression:
