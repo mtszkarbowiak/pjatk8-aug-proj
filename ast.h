@@ -62,6 +62,9 @@ public:
 	{
 		return std::get_if<T>(&value);
 	}
+
+
+	void reassign(const Value& src);
 };
 
 class Variable final
@@ -279,9 +282,40 @@ public:
 	~StatementNode() override = default;
 };
 
+class MultiStatementsNode final : public StatementNode
+{
+	std::unique_ptr<StatementNode> left_statement;
+	std::unique_ptr<StatementNode> right_statement;
+
+	MultiStatementsNode() = default;
+
+public:
+	explicit MultiStatementsNode(StatementNode* left_statement, StatementNode* right_statement);
+
+	void print(std::stringbuf& buf, int32_t depth) const override;
+
+	void execute(ExecutionScopedState&) const override;
+};
+
+class BodyNode final : public StatementNode
+{
+	std::unique_ptr<StatementNode> body_statement;
+
+	BodyNode() = default;
+
+public:
+	explicit BodyNode(StatementNode* body_statement);
+
+	void print(std::stringbuf& buf, int32_t depth) const override;
+
+	void execute(ExecutionScopedState&) const override;
+};
+
 class ResultNode final : public StatementNode
 {
 	std::unique_ptr<ExpressionNode> result_expression;
+
+	ResultNode() = default;
 
 public:
 	explicit ResultNode(ExpressionNode* result_expression);

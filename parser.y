@@ -61,12 +61,11 @@ program:
 
 body:
 	BODY_OPEN statements BODY_CLOSE
-	| statement
 	;
 
 statements:
-	statements STATEMENT_SEPARATOR statement
-	| statement
+	statements STATEMENT_SEPARATOR statement { $$ = new MultiStatementsNode($1, $3); }
+	| statement								{ $$ = $1; }
 	;
 
 

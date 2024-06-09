@@ -7,6 +7,7 @@
 #include <valarray>
 
 
+[[noreturn]]
 void terminate_illegal_program(const std::string& reasoning) {
 	std::cerr << "An error occured during execution. Reason:\n" + reasoning + "\nProgram terminated.";
 	throw std::runtime_error("Illegal program can not be executed.");
@@ -51,7 +52,6 @@ Variable::Variable(std::string name, Value init_value)
 	: name(std::move(name))
 	, value(std::move(init_value))
 {
-	
 }
 
 auto Variable::get_name() const -> const std::string&
@@ -89,7 +89,7 @@ namespace ValueVisitors
 		}
 	};
 
-	struct BinaryOperation
+	struct BinaryOperation final
 	{
 		const Value* left_value;
 		const Value* right_value;
@@ -111,7 +111,6 @@ namespace ValueVisitors
 				}
 
 				terminate_illegal_program("Unknown arithmetic operation.");
-				return 0;
 			};
 
 			*result = Value(calc());
@@ -131,7 +130,6 @@ namespace ValueVisitors
 				}
 
 				terminate_illegal_program("Unknown logic operation.");
-				return 0;
 			};
 
 			*result = Value(calc());
@@ -142,6 +140,37 @@ namespace ValueVisitors
 			terminate_illegal_program("Comparison operations are not yet supported.");
 		}
 	};
+
+	struct Reassignment final
+	{
+		Value* target;
+
+		void operator()(const Value::Logic boolean) const {
+			*target = Value(boolean);
+		}
+
+		void operator()(const Value::Number number) const {
+			*target = Value(number);
+		}
+
+		void operator()(const Value::Text text) const {
+			*target = Value(text);
+		}
+	};
+}
+
+
+void Value::reassign(const Value& src)
+{
+	if (src.value.index() != this->value.index())
+	{
+		terminate_illegal_program("Variable type can not be changed.");
+	}
+
+	ValueVisitors::Reassignment reassignment;
+	reassignment.target = this;
+
+	std::visit(reassignment, src.value);
 }
 
 
@@ -209,7 +238,7 @@ void ExecutionScopedState::declare_variable(Variable&& variable)
 	);
 
 	if (result != variables.end()) {
-		throw std::runtime_error("Variable");
+		terminate_illegal_program("Value with given name is already declared.");
 	}
 
 	this->variables.emplace_back(std::move(variable));
@@ -297,6 +326,19 @@ VariableAssignmentNode::VariableAssignmentNode(
 {
 }
 
+MultiStatementsNode::MultiStatementsNode(
+	StatementNode* left_statement, 
+	StatementNode* right_statement)
+	: left_statement(std::unique_ptr<StatementNode>(left_statement))
+	, right_statement(std::unique_ptr<StatementNode>(right_statement))
+{
+}
+
+BodyNode::BodyNode(StatementNode* body_statement)
+	: body_statement(std::unique_ptr<StatementNode>(body_statement))
+{
+}
+
 
 auto BraceExpressionNode::evaluate(const ExecutionScopedState& execution_scoped_state) -> Value
 {
@@ -347,7 +389,6 @@ auto VariableReferenceNode::evaluate(const ExecutionScopedState& execution_scope
 }
 
 
-
 void ResultNode::execute(ExecutionScopedState& execution_scoped_state) const
 {
 	Value statement_result = this->result_expression->evaluate(execution_scoped_state);
@@ -385,9 +426,35 @@ void AstRoot::execute()
 
 void VariableAssignmentNode::execute(ExecutionScopedState& context) const
 {
-	Value var_value = this->expression->evaluate(context);
-	Variable variable{ this->variable_name, std::move(var_value) };
-	context.declare_variable(std::move(variable));
+	if (this->is_reassignment) // 
+	{
+		Value* value = context.try_get_var_value(this->variable_name);
+
+		if (value == nullptr) {
+			terminate_illegal_program("The value does not exist!");
+		}
+
+		const Value var_value = this->expression->evaluate(context);
+
+		value->reassign(var_value);
+	}
+	else // New Variable
+	{
+		Value var_value = this->expression->evaluate(context);
+		Variable variable{ this->variable_name, std::move(var_value) };
+		context.declare_variable(std::move(variable));
+	}
+}
+
+void MultiStatementsNode::execute(ExecutionScopedState& context) const
+{
+	this->left_statement->execute(context);
+	this->right_statement->execute(context);
+}
+
+void BodyNode::execute(ExecutionScopedState& context) const
+{
+	this->body_statement->execute(context);
 }
 
 
@@ -464,4 +531,23 @@ void VariableAssignmentNode::print(std::stringbuf& buf, const int32_t depth) con
 		append_str_buf(buf, this->variable_name);
 		append_str_buf(buf, " = ...");
 	}
+}
+
+void MultiStatementsNode::print(std::stringbuf& buf, const int32_t depth) const
+{
+	print_padding(buf, depth);
+
+	append_str_buf(buf, "L/R:");
+
+	this->right_statement->print(buf, depth + 1);
+	this->left_statement->print(buf, depth + 1);
+}
+
+void BodyNode::print(std::stringbuf& buf, const int32_t depth) const
+{
+	print_padding(buf, depth);
+
+	append_str_buf(buf, "Body");
+
+	this->body_statement->print(buf, depth + 1);
 }
