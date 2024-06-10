@@ -57,7 +57,7 @@ class AstRoot* root;
 %%
 
 program:
-	statements								{ root = new AstRoot($1); root->print_to_console(); root->execute(); }
+	statements								{ root = new AstRoot($1); /* root->print_to_console(); */ root->execute(); }
 	;
 
 body:
@@ -65,8 +65,8 @@ body:
 	;
 
 statements:
-	statements STATEMENT_SEPARATOR statement { $$ = new MultiStatementsNode($1, $3); }
-	| statement								{ $$ = $1; }
+	statement STATEMENT_SEPARATOR statements { $$ = new MultiStatementsNode($1, $3); }
+	| statement STATEMENT_SEPARATOR			{ $$ = $1; }
 	;
 
 

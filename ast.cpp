@@ -249,6 +249,7 @@ auto get_var_name_predicate(std::string_view name)
 
 ExecutionScopedState::ExecutionScopedState(ExecutionScopedState* parent_state)
 	: parent_state(parent_state)
+	, level(parent_state->level + 1)
 {
 }
 
@@ -531,11 +532,12 @@ void BodyNode::execute(ExecutionScopedState& context) const
 	this->body_statement->execute(context);
 }
 
-void ConditionalStatementNode::execute(ExecutionScopedState& context) const
+void ConditionalStatementNode::execute(ExecutionScopedState& parent_context) const
 {
+
 	auto should_continue = [&]() -> bool
 	{
-		Value val = this->condition->evaluate(context);
+		Value val = this->condition->evaluate(parent_context);
 		const bool* value_ptr = val.try_get<bool>();
 
 		if (value_ptr == nullptr) {
@@ -554,7 +556,8 @@ void ConditionalStatementNode::execute(ExecutionScopedState& context) const
 			return;
 		}
 
-		this->statement->execute(context);
+		ExecutionScopedState conditional_context{ &parent_context };
+		this->statement->execute(conditional_context);
 	}
 
 	if (this->repeating) {

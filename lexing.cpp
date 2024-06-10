@@ -7,7 +7,7 @@
 
 auto main() -> int
 {
-	lu().set_verbose_log(true);
+	lu().set_verbose_log(false);
 
 	// Invoke Lexer and Parser
     const auto parsing_result = yyparse();

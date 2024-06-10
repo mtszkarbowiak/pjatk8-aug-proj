@@ -8,6 +8,7 @@
 
 #include "ast.h"
 #include "ast.h"
+#include "ast.h"
 
 
 class AstNode;
@@ -124,6 +125,7 @@ class ExecutionScopedState final
 	ExecutionScopedState* parent_state{};
 	std::vector<Variable> variables;
 	std::optional<Value> result;
+	int level = 0;
 
 public:
 	explicit ExecutionScopedState() = default;
@@ -362,3 +364,37 @@ public:
 
 	void execute(ExecutionScopedState&) const override;
 };
+
+/*
+class Function final
+{
+	Function() = default;
+
+public:
+	using Signature = std::vector<std::string>;
+
+	explicit Function(BodyNode* body, Signature signature);
+
+	void call(ExecutionScopedState&, std::vector<std::string> args);
+};
+
+
+
+class FunctionDeclarationNode final : public StatementNode
+{
+	FunctionDeclarationNode() = default;
+
+public:
+	void print(std::stringbuf& buf, int32_t depth) const override;
+	void execute(ExecutionScopedState&) const override;
+};
+
+class FunctionCallNode final : public ExpressionNode
+{
+	FunctionCallNode() = default;
+
+public:
+	void print(std::stringbuf& buf, int32_t depth) const override;
+	auto evaluate(const ExecutionScopedState&) -> Value override;
+};
+*/
