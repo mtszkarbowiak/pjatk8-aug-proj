@@ -680,7 +680,7 @@ void ConditionalStatementNode::execute(ExecutionScopedState& parent_context) con
 
 void FunctionDeclarationNode::execute(ExecutionScopedState& context) const
 {
-	std::vector<std::string> args; //TODO
+	const std::vector<std::string> args = this->args->get_list();
 	context.declare_function(Function{ this->name, this->body.get(), args });
 }
 
@@ -689,7 +689,7 @@ auto FunctionCallNode::call(const ExecutionScopedState& context) const -> std::o
 {
 	const Function* function = context.try_get_function(this->name);
 
-	std::vector<std::string> args; //TODO
+	const std::vector<std::string> args = this->args->get_list();
 	std::optional<Value> value = function->call(context, args);
 
 	return value;

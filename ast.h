@@ -219,7 +219,7 @@ protected:
 	void ensure_parent(const ExpressionNode&) const;
 
 public:
-	virtual auto evaluate(const ExecutionScopedState&) -> Value = 0; //TODO
+	virtual auto evaluate(const ExecutionScopedState&) -> Value = 0;
 
 	~ExpressionNode() override = default;
 };
