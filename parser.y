@@ -26,12 +26,14 @@ class AstRoot* root;
 	class Node* node;
 	class StatementNode* statement_node;
 	class ExpressionNode* expression_node;
+	class ArgsListNode* args_node;
 }
 
 %type <statement_node> statement
 %type <statement_node> statements
 %type <statement_node> body
 %type <expression_node> expression
+%type <args_node> args_list
 
 
 %token <bval> TRUE FALSE
@@ -65,6 +67,11 @@ body:
 	BODY_OPEN statements BODY_CLOSE			{ $$ = new BodyNode($2); }
 	;
 
+args_list:
+	args_list ',' IDENTIFIER				{ $$ = new ArgsListNode($3, $1); }
+	| IDENTIFIER							{ $$ = new ArgsListNode($1); }
+	;
+
 statements:
 	statement STATEMENT_SEPARATOR statements { $$ = new MultiStatementsNode($1, $3); }
 	| statement STATEMENT_SEPARATOR			{ $$ = $1; }
@@ -72,12 +79,12 @@ statements:
 
 
 statement:
-	IDENTIFIER '(' ')'						{ $$ = new FunctionCallNode($1); }
+	IDENTIFIER '(' args_list ')'			{ $$ = new FunctionCallNode($1, $3); }
 	| LET IDENTIFIER ASSIGN expression		{ $$ = new VariableAssignmentNode(str_to_cpp($2), $4, false); }
 	| IDENTIFIER ASSIGN expression			{ $$ = new VariableAssignmentNode(str_to_cpp($1), $3, true); }
 	| IF expression body					{ $$ = new ConditionalStatementNode($2, $3, false); }
 	| WHILE expression body					{ $$ = new ConditionalStatementNode($2, $3, true); }
-	| FUNC IDENTIFIER '(' ')' body			{ $$ = new FunctionDeclarationNode($2, $5); }
+	| FUNC IDENTIFIER '(' args_list ')' body { $$ = new FunctionDeclarationNode($2, $6, $4); }
 	| expression							{ $$ = new ResultNode($1); }
 	;
 
@@ -105,7 +112,7 @@ expression:
 	| FALSE									{ $$ = new LiteralNode(Value($1)); }
 	| NUMBER								{ $$ = new LiteralNode(Value($1)); }
 
-	| IDENTIFIER '(' ')'					{ $$ = new FunctionCallNode($1); }
+	| IDENTIFIER '(' args_list ')'			{ $$ = new FunctionCallNode($1, $3); }
 	| IDENTIFIER							{ $$ = new VariableReferenceNode($1); }
 	;
 %%

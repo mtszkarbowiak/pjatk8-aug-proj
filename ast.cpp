@@ -418,6 +418,20 @@ AstRoot::AstRoot(StatementNode* head_statement)
 {
 }
 
+
+
+ArgsListNode::ArgsListNode(std::string name)
+	: name(name)
+{
+}
+
+ArgsListNode::ArgsListNode(std::string name, ArgsListNode* next)
+	: name(name)
+	, next(std::unique_ptr<ArgsListNode>(next))
+{
+}
+
+
 BraceExpressionNode::BraceExpressionNode(ExpressionNode* braced_expression)
 	: braced_expression(std::unique_ptr<ExpressionNode>(braced_expression))
 {
@@ -494,16 +508,22 @@ ConditionalStatementNode::ConditionalStatementNode(
 }
 
 
-FunctionDeclarationNode::FunctionDeclarationNode(std::string name, StatementNode* body_node)
+FunctionDeclarationNode::FunctionDeclarationNode(
+	std::string name, 
+	StatementNode* body_node,
+	ArgsListNode* args)
 	: name(std::move(name))
 	, body(std::unique_ptr<StatementNode>(body_node))
+	, args(std::unique_ptr<ArgsListNode>(args))
 {
 }
 
-FunctionCallNode::FunctionCallNode(std::string name)
+FunctionCallNode::FunctionCallNode(
+	std::string name,
+	ArgsListNode* args)
 	: name(std::move(name))
+	, args(std::unique_ptr<ArgsListNode>(args))
 {
-
 }
 
 
@@ -705,6 +725,30 @@ void AstRoot::print_to_console()
 	this->print(buffer, 0);
 
 	std::cout << buffer.str() << "\n";
+}
+
+
+void ArgsListNode::print(std::stringbuf& buf, int32_t depth) const
+{
+}
+
+
+void ArgsListNode::append_list(std::vector<std::string>& list)
+{
+	list.emplace_back(this->name);
+
+	if (next) {
+		next->append_list(list);
+	}
+}
+
+auto ArgsListNode::get_list() -> std::vector<std::string>
+{
+	std::vector<std::string> args;
+
+	append_list(args);
+
+	return args;
 }
 
 

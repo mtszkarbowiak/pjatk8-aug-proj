@@ -10,6 +10,7 @@
 #include "ast.h"
 #include "ast.h"
 #include "ast.h"
+#include "ast.h"
 
 
 class AstNode;
@@ -189,6 +190,24 @@ public:
 	void print(std::stringbuf& buf, int32_t depth) const override;
 
 	void print_to_console();
+};
+
+
+class ArgsListNode final : public AstNode
+{
+	std::string name;
+	std::unique_ptr<ArgsListNode> next;
+
+	void append_list(std::vector<std::string>&);
+
+public:
+	explicit ArgsListNode(std::string name);
+
+	explicit ArgsListNode(std::string name, ArgsListNode* next);
+
+	void print(std::stringbuf& buf, int32_t depth) const override;
+
+	auto get_list() -> std::vector<std::string>;
 };
 
 
@@ -397,11 +416,16 @@ class FunctionDeclarationNode final : public StatementNode
 {
 	std::string name;
 	std::unique_ptr<StatementNode> body;
+	std::unique_ptr<ArgsListNode> args;
 
 	FunctionDeclarationNode() = default;
 
 public:
-	explicit FunctionDeclarationNode(std::string name, StatementNode* body_node);
+	explicit FunctionDeclarationNode(
+		std::string name, 
+		StatementNode* body_node,
+		ArgsListNode* args
+	);
 
 	void print(std::stringbuf& buf, int32_t depth) const override;
 
@@ -411,14 +435,18 @@ public:
 class FunctionCallNode final : public ExpressionNode, public StatementNode
 {
 	std::string name;
-	std::vector<std::string> args;
+	std::unique_ptr<ArgsListNode> args;
 
 	FunctionCallNode() = default;
 
 	auto call(const ExecutionScopedState&) const -> std::optional<Value>;
 
 public:
-	explicit FunctionCallNode(std::string name);
+	explicit FunctionCallNode(
+		std::string name,
+		ArgsListNode* args
+	);
+
 
 	void print(std::stringbuf& buf, int32_t depth) const override;
 
