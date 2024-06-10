@@ -695,6 +695,12 @@ void ConditionalStatementNode::execute(ExecutionScopedState& parent_context) con
 {
 	auto should_continue = [&]() -> bool
 	{
+		// This is a hack.
+		// With current architecture, EVERY branching must manually check for termination!
+		if (parent_context.is_terminated()) {
+			return false;
+		}
+
 		Value val = this->condition->evaluate(parent_context);
 		const bool* value_ptr = val.try_get<bool>();
 
@@ -708,14 +714,15 @@ void ConditionalStatementNode::execute(ExecutionScopedState& parent_context) con
 	constexpr auto iteration_cap = 1 << 13;
 	const auto max_iteration_count = this->repeating ? iteration_cap : 1;
 
-	ExecutionScopedState conditional_context{
-		&parent_context,
-		parent_context.get_termination_token(),
-		parent_context.get_result_target()
-	};
 
 	for (int i = 0; i < max_iteration_count; ++i) 
 	{
+		ExecutionScopedState conditional_context{
+			&parent_context,
+			parent_context.get_termination_token(),
+			parent_context.get_result_target()
+		};
+
 		if (!should_continue()) {
 			return;
 		}
