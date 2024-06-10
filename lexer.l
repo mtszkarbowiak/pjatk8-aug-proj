@@ -35,6 +35,8 @@
 "let"           { return lu().feed(LET); }
 "assert"        { return lu().feed(ASSERT); }
 
+"func"          { return lu().feed(FUNC); }
+
 "if"            { return lu().feed(IF); }
 "else"          { return lu().feed(ELSE); }
 "while"         { return lu().feed(WHILE); }

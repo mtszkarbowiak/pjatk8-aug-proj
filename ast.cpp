@@ -70,6 +70,44 @@ auto Variable::get_value() -> Value&
 }
 
 
+
+Function::Function(std::string name, StatementNode* body, Signature signature)
+	: name(std::move(name))
+	, body(body)
+	, signature(std::move(signature))
+{
+}
+
+auto Function::call(const ExecutionScopedState& context, const std::vector<std::string>& args) const -> std::optional<Value>
+{
+	ExecutionScopedState call_context(context);
+
+	// REBIND ARGS
+	for (size_t i = 0; i < args.size(); ++i) 
+	{
+		const auto& arg = args.at(i);
+		const Value* value = context.try_get_var_value(arg);
+
+		if (value == nullptr) {
+			terminate_illegal_program("Function argument does not exist.");
+		}
+
+		Variable variable{ signature.at(i), *value };
+
+		call_context.declare_variable(std::move(variable));
+	}
+
+	body->execute(call_context);
+
+	return call_context.get_result();
+}
+
+auto Function::get_name() const -> const std::string&
+{
+	return this->name;
+}
+
+
 namespace ValueVisitors
 {
 	struct ValuePrinter final
@@ -293,6 +331,28 @@ auto ExecutionScopedState::try_get_var_value(const std::string_view name) const 
 	return found ? (&result->get_value()) : nullptr;
 }
 
+auto ExecutionScopedState::try_get_function(std::string_view name) const -> const Function*
+{
+	auto result = std::find_if(
+		functions.begin(),
+		functions.end(),
+		[name](const Function& func) -> bool
+		{
+			return name == func.get_name();
+		}
+	);
+
+	const bool found = result != functions.end();
+
+	if (!found && parent_state) {
+		if (const Function* parent_function = parent_state->try_get_function(name)) {
+			return parent_function;
+		}
+	}
+
+	return found ? &(*result) : nullptr;
+}
+
 void ExecutionScopedState::declare_variable(Variable&& variable)
 {
 	const auto result = std::find_if(
@@ -306,6 +366,26 @@ void ExecutionScopedState::declare_variable(Variable&& variable)
 	}
 
 	this->variables.emplace_back(std::move(variable));
+}
+
+void ExecutionScopedState::declare_function(Function&& function)
+{
+	auto name = function.get_name();
+
+	const auto result = std::find_if(
+		functions.begin(),
+		functions.end(),
+		[name](const Function& func) -> bool
+		{
+			return name == func.get_name();
+		}
+	);
+
+	if (result != functions.end()) {
+		terminate_illegal_program("Function with given name is already declared.");
+	}
+
+	this->functions.emplace_back(std::move(function));
 }
 
 void ExecutionScopedState::set_result(Value&& value)
@@ -413,6 +493,18 @@ ConditionalStatementNode::ConditionalStatementNode(
 {
 }
 
+
+FunctionDeclarationNode::FunctionDeclarationNode(std::string name, StatementNode* body_node)
+	: name(std::move(name))
+	, body(std::unique_ptr<StatementNode>(body_node))
+{
+}
+
+FunctionCallNode::FunctionCallNode(std::string name)
+	: name(std::move(name))
+{
+
+}
 
 
 auto BraceExpressionNode::evaluate(const ExecutionScopedState& execution_scoped_state) -> Value
@@ -566,6 +658,38 @@ void ConditionalStatementNode::execute(ExecutionScopedState& parent_context) con
 }
 
 
+void FunctionDeclarationNode::execute(ExecutionScopedState& context) const
+{
+	std::vector<std::string> args; //TODO
+	context.declare_function(Function{ this->name, this->body.get(), args });
+}
+
+
+auto FunctionCallNode::call(const ExecutionScopedState& context) const -> std::optional<Value>
+{
+	const Function* function = context.try_get_function(this->name);
+
+	std::vector<std::string> args; //TODO
+	std::optional<Value> value = function->call(context, args);
+
+	return value;
+}
+
+auto FunctionCallNode::evaluate(const ExecutionScopedState& context) -> Value
+{
+	std::optional<Value> result = call(context);
+
+	if (!result.has_value()) {
+		terminate_illegal_program("Function does not return anything.");
+	}
+
+	return result.value();
+}
+
+void FunctionCallNode::execute(ExecutionScopedState& context) const
+{
+	call(context);
+}
 
 
 void AstRoot::print(std::stringbuf& buf, int32_t depth) const
@@ -671,4 +795,13 @@ void ConditionalStatementNode::print(std::stringbuf& buf, const int32_t depth) c
 	this->condition->print(buf, depth + 1);
 
 	this->condition->print(buf, depth + 1);
+}
+
+void FunctionDeclarationNode::print(std::stringbuf& buf, const int32_t depth) const
+{
+	print_padding(buf, depth);
+}
+
+void FunctionCallNode::print(std::stringbuf& buf, int32_t depth) const
+{
 }

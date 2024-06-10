@@ -42,6 +42,7 @@ class AstRoot* root;
 %token STATEMENT_SEPARATOR BODY_OPEN BODY_CLOSE
 %token LET ASSIGN OF_TYPE ASSERT
 %token IF ELSE WHILE
+%token FUNC
 %token IDENTIFIER
 %token PLUS MINUS MULTIPLY DIVIDE MODULO 
 %token EQUAL NOT_EQUAL LESS_THAN MORE_THAN LESS_EQUAL MORE_EQUAL
@@ -71,11 +72,13 @@ statements:
 
 
 statement:
-	expression								{ $$ = new ResultNode($1); }
+	IDENTIFIER '(' ')'						{ $$ = new FunctionCallNode($1); }
 	| LET IDENTIFIER ASSIGN expression		{ $$ = new VariableAssignmentNode(str_to_cpp($2), $4, false); }
 	| IDENTIFIER ASSIGN expression			{ $$ = new VariableAssignmentNode(str_to_cpp($1), $3, true); }
 	| IF expression body					{ $$ = new ConditionalStatementNode($2, $3, false); }
 	| WHILE expression body					{ $$ = new ConditionalStatementNode($2, $3, true); }
+	| FUNC IDENTIFIER '(' ')' body			{ $$ = new FunctionDeclarationNode($2, $5); }
+	| expression							{ $$ = new ResultNode($1); }
 	;
 
 expression:
@@ -102,6 +105,7 @@ expression:
 	| FALSE									{ $$ = new LiteralNode(Value($1)); }
 	| NUMBER								{ $$ = new LiteralNode(Value($1)); }
 
+	| IDENTIFIER '(' ')'					{ $$ = new FunctionCallNode($1); }
 	| IDENTIFIER							{ $$ = new VariableReferenceNode($1); }
 	;
 %%

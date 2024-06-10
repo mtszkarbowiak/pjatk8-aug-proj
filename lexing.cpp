@@ -84,6 +84,9 @@ auto get_token_name(const yytokentype token) -> const char*
 		case STATEMENT_SEPARATOR: return "Statements Separator";
 		case BODY_OPEN:			return "Body Opening Brace";
 		case BODY_CLOSE:		return "Body Closing Brace";
+
+		case FUNC:				return "Function Declaration Keyword";
+
 		default:				return "???";
 	}
 }

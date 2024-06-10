@@ -9,6 +9,7 @@
 #include "ast.h"
 #include "ast.h"
 #include "ast.h"
+#include "ast.h"
 
 
 class AstNode;
@@ -92,6 +93,8 @@ public:
 	auto get_value() -> Value&;
 };
 
+class Function;
+
 
 enum class ArithmeticOperation
 {
@@ -124,6 +127,7 @@ class ExecutionScopedState final
 {
 	ExecutionScopedState* parent_state{};
 	std::vector<Variable> variables;
+	std::vector<Function> functions;
 	std::optional<Value> result;
 	int level = 0;
 
@@ -136,7 +140,11 @@ public:
 
 	auto try_get_var_value(std::string_view name) const -> const Value*;
 
+	auto try_get_function(std::string_view name) const -> const Function*;
+
 	void declare_variable(Variable&& variable);
+
+	void declare_function(Function&& function);
 
 	void set_result(Value&& value);
 
@@ -365,36 +373,56 @@ public:
 	void execute(ExecutionScopedState&) const override;
 };
 
-/*
 class Function final
 {
+	std::string name;
+	StatementNode* body;
+	std::vector<std::string> signature;
+
 	Function() = default;
 
 public:
 	using Signature = std::vector<std::string>;
 
-	explicit Function(BodyNode* body, Signature signature);
+	explicit Function(std::string name, StatementNode* body, Signature signature);
 
-	void call(ExecutionScopedState&, std::vector<std::string> args);
+	auto call(const ExecutionScopedState&, const std::vector<std::string>& args) const -> std::optional<Value>;
+
+	auto get_name() const -> const std::string&;
 };
 
 
 
 class FunctionDeclarationNode final : public StatementNode
 {
+	std::string name;
+	std::unique_ptr<StatementNode> body;
+
 	FunctionDeclarationNode() = default;
 
 public:
+	explicit FunctionDeclarationNode(std::string name, StatementNode* body_node);
+
 	void print(std::stringbuf& buf, int32_t depth) const override;
+
 	void execute(ExecutionScopedState&) const override;
 };
 
-class FunctionCallNode final : public ExpressionNode
+class FunctionCallNode final : public ExpressionNode, public StatementNode
 {
+	std::string name;
+	std::vector<std::string> args;
+
 	FunctionCallNode() = default;
 
+	auto call(const ExecutionScopedState&) const -> std::optional<Value>;
+
 public:
+	explicit FunctionCallNode(std::string name);
+
 	void print(std::stringbuf& buf, int32_t depth) const override;
+
 	auto evaluate(const ExecutionScopedState&) -> Value override;
+
+	void execute(ExecutionScopedState&) const override;
 };
-*/
