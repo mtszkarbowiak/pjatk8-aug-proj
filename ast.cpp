@@ -137,7 +137,70 @@ namespace ValueVisitors
 
 		void operator()(ComparisonOperation comparison_operation)
 		{
-			terminate_illegal_program("Comparison operations are not yet supported.");
+			const Value::Logic* logicL = left_value->try_get<Value::Logic>();
+			const Value::Number* numberL = left_value->try_get<Value::Number>();
+
+			if (logicL) 
+			{
+				const Value::Logic* logicR = right_value->try_get<Value::Logic>();
+
+				if (logicR == nullptr) {
+					terminate_illegal_program("Logic value must be compared with other logic value.");
+				}
+
+				bool evaluated;
+				switch (comparison_operation) {
+					case ComparisonOperation::Equality:
+						evaluated = *logicR == *logicL;
+						break;
+					case ComparisonOperation::Inequality:
+						evaluated = *logicR != *logicL;
+						break;
+					default:
+						terminate_illegal_program("Logic value may not be a subject of this comparison operation.");
+				}
+				
+				*result = Value(evaluated);
+			}
+			else if (numberL) 
+			{
+				const Value::Number* numberR = right_value->try_get<Value::Number>();
+
+				if (numberR == nullptr) {
+					terminate_illegal_program("Number value must be compared with other number value.");
+				}
+
+				bool evaluated;
+				switch (comparison_operation) {
+					case ComparisonOperation::Equality:
+						evaluated = (*numberL) == (*numberR);
+						break;
+					case ComparisonOperation::Inequality:
+						evaluated = (*numberL) != (*numberR);
+						break;
+					case ComparisonOperation::Less:
+						evaluated = (*numberL) < (*numberR);
+						break;
+					case ComparisonOperation::LessOrEqual:
+						evaluated = (*numberL) <= (*numberR);
+						break;
+					case ComparisonOperation::More:
+						evaluated = (*numberL) > (*numberR);
+						break;
+					case ComparisonOperation::MoreOrEqual:
+						evaluated = (*numberL) >= (*numberR);
+						break;
+
+					default:
+						terminate_illegal_program("Unknown comparison operation.");
+				}
+
+				*result = Value(evaluated);
+			}
+			else 
+			{
+				terminate_illegal_program("The type can not be a subject of comparison operator.");
+			}
 		}
 	};
 
