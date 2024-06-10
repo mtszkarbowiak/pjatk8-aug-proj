@@ -91,7 +91,7 @@ auto Function::call(ExecutionScopedState& context, const std::vector<std::string
 		const Value* value = context.try_get_var_value(arg);
 
 		if (value == nullptr) {
-			terminate_illegal_program("Function argument does not exist.");
+			terminate_illegal_program("Function argument " + arg + " does not exist.");
 		}
 
 		Variable variable{ signature.at(i), *value };
@@ -656,7 +656,7 @@ void VariableAssignmentNode::execute(ExecutionScopedState& context) const
 		Value* value = context.try_get_var_value(this->variable_name);
 
 		if (value == nullptr) {
-			terminate_illegal_program("The value does not exist!");
+			terminate_illegal_program("The value " + variable_name + "does not exist!");
 		}
 
 		const Value var_value = this->expression->evaluate(context);
