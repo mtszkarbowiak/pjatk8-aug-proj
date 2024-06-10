@@ -13,41 +13,41 @@ let t = true;
 let f = false;
 
 func isPrime(n) {
-	if n <= 1 { f; };				/* If n is smaller or equal to one, it is not a prime. */
-	if n == 2 { t; };				/* If n is equal to two, it is a prime. */
+	if n <= 1 { return f; };			/* If n is smaller or equal to one, it is not a prime. */
+	if n == 2 { return t; };			/* If n is equal to two, it is a prime. */
 
-	if (n % 2) == 0 { f; };			/* If n mod 2 is zero, it is not a prime. */
+	if (n % 2) == 0 { return f; };		/* If n mod 2 is zero, it is not a prime. */
 
-	let d = 3;						/* Declare the divisor. */
+	let d = 3;							/* Declare the divisor. */
 
-	while (d * d) <= n {			/* Iterate only for square roots. */
-		if (n % d) == 0 { f; };		/* If modulo is 0, it's not a prime. */
-		d = d + 2;					/* Keep checking... */
+	while (d * d) <= n {				/* Iterate only for square roots. */
+		if (n % d) == 0 { return f; };	/* If modulo is 0, it's not a prime. */
+		d = d + 2;						/* Keep checking... */
 	};
 
-	t;								/* Apparently, it is a prime! */
+	return t;							/* Apparently, it is a prime! */
 };
 
 func primeCount(max) {
 	print max;
 
-	let out = 0;					/* Skip 0, 1, 2. */
+	let out = 0;						/* Skip 0, 1, 2. */
 	let num = 2;
-	while num < max {				/* Iterate over the range. */
+	while num < max {					/* Iterate over the range. */
 		let prime = isPrime(num);
 		if prime {
-			out = out + 1;			/* Count the prime. */
+			out = out + 1;				/* Count the prime. */
 		};
 
-		print num;					/* Print current results. */
+		print num;						/* Print current results. */
 		print out;
 
-		num = num + 1;				/* Keep going... */
+		num = num + 1;					/* Keep going... */
 	};
-	out;
+	return out;
 };
 
 let limit = 50;
 let programOut = primeCount(limit);
 
-programOut;
+return programOut;

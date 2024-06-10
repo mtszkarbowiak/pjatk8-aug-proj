@@ -42,7 +42,7 @@ class AstRoot* root;
 
 %token STOP
 %token STATEMENT_SEPARATOR BODY_OPEN BODY_CLOSE
-%token LET ASSIGN OF_TYPE ASSERT
+%token LET ASSIGN OF_TYPE RETURN
 %token IF ELSE WHILE
 %token FUNC
 
@@ -92,7 +92,7 @@ statement:
 	| WHILE expression body					{ $$ = new ConditionalStatementNode($2, $3, true); }
 	| FUNC IDENTIFIER '(' args_list ')' body { $$ = new FunctionDeclarationNode($2, $6, $4); }
 	| PRINT IDENTIFIER						{ $$ = new PrintNode($2); }
-	| expression							{ $$ = new ResultNode($1); }
+	| RETURN expression						{ $$ = new ResultNode($2); }
 	;
 
 expression:

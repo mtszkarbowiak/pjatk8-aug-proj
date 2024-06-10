@@ -49,7 +49,7 @@ auto get_token_name(const yytokentype token) -> const char*
 		case STOP:				return "Program Termination Keyword";
 
 		case LET:				return "Variable Assignment Keyword";
-		case ASSERT:			return "Assert Operator";
+		case RETURN:			return "Return Operator";
 
 		case ASSIGN:			return "Variable Assignment Operator";
 		case OF_TYPE:			return "Type Declaration Operator";

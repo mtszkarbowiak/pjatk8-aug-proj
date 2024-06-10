@@ -33,7 +33,7 @@
 
 "stop"          { return lu().feed(STOP); }
 "let"           { return lu().feed(LET); }
-"assert"        { return lu().feed(ASSERT); }
+"return"        { return lu().feed(RETURN); }
 "print"         { return lu().feed(PRINT); }
 
 "func"          { return lu().feed(FUNC); }
