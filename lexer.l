@@ -62,6 +62,7 @@
 ("&&"|"and")    { return lu().feed(LOGIC_AND); }
 ("||"|"or")     { return lu().feed(LOGIC_OR); }
 ("^"|"xor")     { return lu().feed(LOGIC_XOR); }
+"!"             { return lu().feed(LOGIC_NOT); }
 
 [a-zA-Z_][a-zA-Z0-9_]*  { yylval.str = strdup(yytext); return lu().feed(IDENTIFIER, yytext); }
 

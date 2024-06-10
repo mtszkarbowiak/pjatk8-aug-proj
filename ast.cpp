@@ -470,11 +470,12 @@ BraceExpressionNode::BraceExpressionNode(ExpressionNode* braced_expression)
 
 LiteralNode::LiteralNode(Value&& value)
 	: ExpressionNode()
-	, value(value)
+	, value(std::move(value))
 {
 }
+
 UnaryOperationNode::UnaryOperationNode(
-	const Operator op,
+	const UnaryOperation op,
 	ExpressionNode* child)
 	: ExpressionNode()
 	, operator_(op)
@@ -576,7 +577,27 @@ auto UnaryOperationNode::evaluate(const ExecutionScopedState& execution_scoped_s
 {
 	const Value child_value = this->child->evaluate(execution_scoped_state);
 
-	Value result = child_value; //TODO Add the handler
+	Value result;
+	switch (operator_) {
+		case UnaryOperation::Not:
+		{
+			const Value::Logic logicValue = get_value_casted<Value::Logic>(
+				&child_value, 
+				"Negation with NOT can be done only on logic values.");
+			result = Value(!logicValue);
+			break;
+		}
+		case UnaryOperation::Negate:
+		{
+			const Value::Number numberValue = get_value_casted<Value::Number>(
+				&child_value,
+				"Negation with a minus can be done only on numbers!");
+			result = Value(-1 * numberValue);
+			break;
+		}
+		default:
+			terminate_illegal_program("Not recognized unary operator.");
+	}
 
 	return result;
 }

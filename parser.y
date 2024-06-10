@@ -49,8 +49,8 @@ class AstRoot* root;
 
 %token EQUAL NOT_EQUAL LESS_THAN MORE_THAN LESS_EQUAL MORE_EQUAL
 %token LOGIC_AND LOGIC_OR LOGIC_XOR
-%token PLUS MINUS 
-%token MULTIPLY DIVIDE MODULO 
+%token PLUS MINUS LOGIC_NOT
+%token MULTIPLY DIVIDE MODULO
 
 %token EOL
 %token PRINT
@@ -112,6 +112,9 @@ expression:
 	| expression LOGIC_AND expression		{ $$ = new BinaryOperationNode(LogicOperation::And, $1, $3); }
 	| expression LOGIC_OR expression		{ $$ = new BinaryOperationNode(LogicOperation::Or, $1, $3); }
 	| expression LOGIC_XOR expression		{ $$ = new BinaryOperationNode(LogicOperation::Xor, $1, $3); }
+	
+	| LOGIC_NOT expression					{ $$ = new UnaryOperationNode(UnaryOperation::Not, $2); }
+	| MINUS expression						{ $$ = new UnaryOperationNode(UnaryOperation::Negate, $2); }
 
 	| TRUE									{ $$ = new LiteralNode(Value($1)); }
 	| FALSE									{ $$ = new LiteralNode(Value($1)); }

@@ -124,6 +124,12 @@ enum class ComparisonOperation
 	MoreOrEqual,
 };
 
+enum class UnaryOperation
+{
+	Not,
+	Negate,
+};
+
 
 class ExecutionScopedState final
 {
@@ -265,9 +271,7 @@ public:
 class UnaryOperationNode final : public ExpressionNode
 {
 public:
-	enum class Operator { Minus, Not };
-
-	explicit UnaryOperationNode(Operator op, ExpressionNode* child);
+	explicit UnaryOperationNode(UnaryOperation op, ExpressionNode* child);
 
 	auto evaluate(const ExecutionScopedState&) -> Value override;
 
@@ -275,7 +279,7 @@ public:
 
 
 private:
-	Operator operator_;
+	UnaryOperation operator_;
 	std::unique_ptr<ExpressionNode> child;
 };
 
