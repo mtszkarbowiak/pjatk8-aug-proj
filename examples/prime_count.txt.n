@@ -1,0 +1,1 @@
+let t = true;let f = false;func isPrime(n) {	if n <= 1 { f; };	if n == 2 { t; };	if (n % 2) == 0 { f; };	/* Divisor */	let i = 3;	while (i * i) <= n {		if (n % i) == 0 { f; };		i = i + 2;	};	t;};func primeCount(m) {	let out = 0;	let i = 2;	while i < m {		if isPrime(i) {			out = out + 1;		};		i = i + 1;	};	out;};let limit = 50;let programOut = primeCount(limit);programOut;

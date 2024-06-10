@@ -1,18 +1,16 @@
 
-/* Input */
-let n = 5;
+func factorial(n) { 
+	let i = 1; 
+	let result = 1; 
+	while i <= n { 
+		result = result * i; 
+		i = i + 1; 
+	}; 
+	result; 
+}; 
 
-/* Factorial */
-let result = 1;
+let j = 6;
+let out = factorial(j); 
+out;
 
-
-let i = 1;
-
-while i <= n {
-	result = result * i;
-	i = i + 1;
-};
-
-result;
-
-/* Input */ let n = 5; /* Factorial */ let result = 1; let i = 1; while i <= n { result = result * i; i = i + 1 }; result
+func factorial(n) { let i = 1; let result = 1; while i <= n { result = result * i; i = i + 1; }; result; }; let j = 6; let out = factorial(j); out;
