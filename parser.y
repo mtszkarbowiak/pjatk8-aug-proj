@@ -45,21 +45,23 @@ class AstRoot* root;
 %token LET ASSIGN OF_TYPE ASSERT
 %token IF ELSE WHILE
 %token FUNC
-%token IDENTIFIER
 
 %token EQUAL NOT_EQUAL LESS_THAN MORE_THAN LESS_EQUAL MORE_EQUAL
 %token LOGIC_AND LOGIC_OR LOGIC_XOR
-%token PLUS MINUS LOGIC_NOT
+%token PLUS MINUS
 %token MULTIPLY DIVIDE MODULO
+%token LOGIC_NOT
 
 %token EOL
 %token PRINT
 
 %start program
 
+%left STATEMENT_SEPARATOR
 %left PLUS MINUS DIVIDE MULTIPLY MODULO
 %left EQUAL NOT_EQUAL LESS_THAN MORE_THAN LESS_EQUAL MORE_EQUAL
 %left LOGIC_AND LOGIC_OR LOGIC_XOR
+%right LOGIC_NOT
 
 %%
 
@@ -95,7 +97,7 @@ statement:
 
 expression:
 	'(' expression ')'						{ $$ = new BraceExpressionNode($2); }
-
+	
 	| expression MULTIPLY expression		{ $$ = new BinaryOperationNode(ArithmeticOperation::Multiplication, $1, $3); }
 	| expression DIVIDE expression			{ $$ = new BinaryOperationNode(ArithmeticOperation::Division, $1, $3); }
 	| expression PLUS expression			{ $$ = new BinaryOperationNode(ArithmeticOperation::Addition, $1, $3); }
@@ -115,7 +117,7 @@ expression:
 	
 	| LOGIC_NOT expression					{ $$ = new UnaryOperationNode(UnaryOperation::Not, $2); }
 	| MINUS expression						{ $$ = new UnaryOperationNode(UnaryOperation::Negate, $2); }
-
+	
 	| TRUE									{ $$ = new LiteralNode(Value($1)); }
 	| FALSE									{ $$ = new LiteralNode(Value($1)); }
 	| NUMBER								{ $$ = new LiteralNode(Value($1)); }
