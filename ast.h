@@ -11,6 +11,7 @@
 #include "ast.h"
 #include "ast.h"
 #include "ast.h"
+#include "ast.h"
 
 
 class AstNode;
@@ -460,6 +461,21 @@ public:
 	void print(std::stringbuf& buf, int32_t depth) const override;
 
 	auto evaluate(const ExecutionScopedState&) -> Value override;
+
+	void execute(ExecutionScopedState&) const override;
+};
+
+class PrintNode final : public StatementNode
+{
+	std::string name;
+
+
+	PrintNode() = default;
+
+public:
+	explicit PrintNode(std::string name);
+
+	void print(std::stringbuf& buf, int32_t depth) const override;
 
 	void execute(ExecutionScopedState&) const override;
 };

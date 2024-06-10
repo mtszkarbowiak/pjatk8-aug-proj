@@ -50,6 +50,7 @@ class AstRoot* root;
 %token EQUAL NOT_EQUAL LESS_THAN MORE_THAN LESS_EQUAL MORE_EQUAL
 %token LOGIC_AND LOGIC_OR LOGIC_XOR
 %token EOL
+%token PRINT
 
 %start program
 
@@ -85,6 +86,7 @@ statement:
 	| IF expression body					{ $$ = new ConditionalStatementNode($2, $3, false); }
 	| WHILE expression body					{ $$ = new ConditionalStatementNode($2, $3, true); }
 	| FUNC IDENTIFIER '(' args_list ')' body { $$ = new FunctionDeclarationNode($2, $6, $4); }
+	| PRINT IDENTIFIER						{ $$ = new PrintNode($2); }
 	| expression							{ $$ = new ResultNode($1); }
 	;
 

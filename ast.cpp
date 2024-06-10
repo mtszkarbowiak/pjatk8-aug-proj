@@ -557,6 +557,10 @@ FunctionCallNode::FunctionCallNode(
 {
 }
 
+PrintNode::PrintNode(std::string name) : name(std::move(name))
+{
+}
+
 
 auto BraceExpressionNode::evaluate(const ExecutionScopedState& execution_scoped_state) -> Value
 {
@@ -704,17 +708,18 @@ void ConditionalStatementNode::execute(ExecutionScopedState& parent_context) con
 	constexpr auto iteration_cap = 1 << 13;
 	const auto max_iteration_count = this->repeating ? iteration_cap : 1;
 
+	ExecutionScopedState conditional_context{
+		&parent_context,
+		parent_context.get_termination_token(),
+		parent_context.get_result_target()
+	};
+
 	for (int i = 0; i < max_iteration_count; ++i) 
 	{
 		if (!should_continue()) {
 			return;
 		}
 
-		ExecutionScopedState conditional_context{
-			&parent_context,
-			parent_context.get_termination_token(),
-			parent_context.get_result_target()
-		};
 		this->statement->execute(conditional_context);
 	}
 
@@ -760,6 +765,23 @@ void FunctionCallNode::execute(ExecutionScopedState& context) const
 {
 	call(context);
 }
+
+void PrintNode::execute(ExecutionScopedState& context) const
+{
+	const Value* v = context.try_get_var_value(this->name);
+
+	if (v == nullptr) {
+		std::cout << this->name << " does not exist\n";
+	}
+
+	std::string target;
+	const ValueVisitors::ValuePrinter printer{ &target };
+	v->handle_by_visitor(printer);
+
+	std::cout << this->name << " = " << target << "\n";
+}
+
+
 
 
 void AstRoot::print(std::stringbuf& buf, int32_t depth) const
@@ -897,5 +919,9 @@ void FunctionDeclarationNode::print(std::stringbuf& buf, const int32_t depth) co
 }
 
 void FunctionCallNode::print(std::stringbuf& buf, int32_t depth) const
+{
+}
+
+void PrintNode::print(std::stringbuf& buf, int32_t depth) const
 {
 }

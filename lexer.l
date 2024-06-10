@@ -34,6 +34,7 @@
 "stop"          { return lu().feed(STOP); }
 "let"           { return lu().feed(LET); }
 "assert"        { return lu().feed(ASSERT); }
+"print"         { return lu().feed(PRINT); }
 
 "func"          { return lu().feed(FUNC); }
 
