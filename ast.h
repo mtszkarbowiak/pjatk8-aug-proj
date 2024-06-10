@@ -129,13 +129,14 @@ class ExecutionScopedState final
 	ExecutionScopedState* parent_state{};
 	std::vector<Variable> variables;
 	std::vector<Function> functions;
-	std::optional<Value> result;
+	std::optional<Value>* result;
+	bool* termination_token;
 	int level = 0;
 
 public:
-	explicit ExecutionScopedState() = default;
+	explicit ExecutionScopedState(bool* termination_token, std::optional<Value>* result);
 
-	explicit ExecutionScopedState(ExecutionScopedState* parent_state);
+	explicit ExecutionScopedState(ExecutionScopedState* parent_state, bool* termination_token, std::optional<Value>* result);
 
 	auto try_get_var_value(std::string_view name) -> Value*;
 
@@ -150,6 +151,14 @@ public:
 	void set_result(Value&& value);
 
 	auto get_result() const -> const std::optional<Value>&;
+
+	auto get_result_target() -> std::optional<Value>*;
+
+	void mark_termination();
+
+	auto is_terminated() const -> bool;
+
+	auto get_termination_token() const-> bool*;
 
 	void print_summary();
 };
@@ -405,7 +414,7 @@ public:
 
 	explicit Function(std::string name, StatementNode* body, Signature signature);
 
-	auto call(const ExecutionScopedState&, const std::vector<std::string>& args) const -> std::optional<Value>;
+	auto call(ExecutionScopedState&, const std::vector<std::string>& args) const -> std::optional<Value>;
 
 	auto get_name() const -> const std::string&;
 };

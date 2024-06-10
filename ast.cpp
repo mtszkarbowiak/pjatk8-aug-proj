@@ -78,9 +78,11 @@ Function::Function(std::string name, StatementNode* body, Signature signature)
 {
 }
 
-auto Function::call(const ExecutionScopedState& context, const std::vector<std::string>& args) const -> std::optional<Value>
+auto Function::call(ExecutionScopedState& context, const std::vector<std::string>& args) const -> std::optional<Value>
 {
-	ExecutionScopedState call_context(context);
+	bool termination_token = false;
+	std::optional<Value> result;
+	ExecutionScopedState call_context{ &context, &termination_token, &result };
 
 	// REBIND ARGS
 	for (size_t i = 0; i < args.size(); ++i) 
@@ -99,7 +101,7 @@ auto Function::call(const ExecutionScopedState& context, const std::vector<std::
 
 	body->execute(call_context);
 
-	return call_context.get_result();
+	return result;
 }
 
 auto Function::get_name() const -> const std::string&
@@ -285,8 +287,17 @@ auto get_var_name_predicate(std::string_view name)
 }
 
 
-ExecutionScopedState::ExecutionScopedState(ExecutionScopedState* parent_state)
+ExecutionScopedState::ExecutionScopedState(bool* termination_token, std::optional<Value>* result)
+	: result(result)
+	, termination_token(termination_token)
+{
+
+}
+
+ExecutionScopedState::ExecutionScopedState(ExecutionScopedState* parent_state, bool* termination_token, std::optional<Value>* result)
 	: parent_state(parent_state)
+	, result(result)
+	, termination_token(termination_token)
 	, level(parent_state->level + 1)
 {
 }
@@ -390,16 +401,36 @@ void ExecutionScopedState::declare_function(Function&& function)
 
 void ExecutionScopedState::set_result(Value&& value)
 {
-	if (result.has_value()) {
+	if (result->has_value()) {
 		terminate_illegal_program("The algorithm has already declared returned value.");
 	}
 
-	this->result.emplace(std::move(value));
+	this->result->emplace(std::move(value));
 }
 
 auto ExecutionScopedState::get_result() const -> const std::optional<Value>&
 {
+	return *this->result;
+}
+
+auto ExecutionScopedState::get_result_target() -> std::optional<Value>*
+{
 	return this->result;
+}
+
+void ExecutionScopedState::mark_termination()
+{
+	*termination_token = true;
+}
+
+auto ExecutionScopedState::is_terminated() const -> bool
+{
+	return *termination_token;
+}
+
+auto ExecutionScopedState::get_termination_token() const -> bool*
+{
+	return termination_token;
 }
 
 void ExecutionScopedState::print_summary()
@@ -580,6 +611,7 @@ void ResultNode::execute(ExecutionScopedState& execution_scoped_state) const
 {
 	Value statement_result = this->result_expression->evaluate(execution_scoped_state);
 	execution_scoped_state.set_result(std::move(statement_result));
+	execution_scoped_state.mark_termination();
 }
 
 
@@ -593,9 +625,11 @@ void AstNode::print_padding(std::stringbuf& buf, const int32_t depth) const
 
 void AstRoot::execute()
 {
-	ExecutionScopedState execution_state;
+	bool termination_token = false;
+	std::optional<Value> result;
+	ExecutionScopedState execution_state{ &termination_token, &result };
+
 	this->head_statement->execute(execution_state);
-	auto result = execution_state.get_result();
 
 	if (result.has_value()) {
 		std::string str;
@@ -635,7 +669,16 @@ void VariableAssignmentNode::execute(ExecutionScopedState& context) const
 
 void MultiStatementsNode::execute(ExecutionScopedState& context) const
 {
+	if (context.is_terminated()) {
+		return;
+	}
+
 	this->left_statement->execute(context);
+
+	if (context.is_terminated()) {
+		return;
+	}
+
 	this->right_statement->execute(context);
 }
 
@@ -646,7 +689,6 @@ void BodyNode::execute(ExecutionScopedState& context) const
 
 void ConditionalStatementNode::execute(ExecutionScopedState& parent_context) const
 {
-
 	auto should_continue = [&]() -> bool
 	{
 		Value val = this->condition->evaluate(parent_context);
@@ -668,7 +710,11 @@ void ConditionalStatementNode::execute(ExecutionScopedState& parent_context) con
 			return;
 		}
 
-		ExecutionScopedState conditional_context{ &parent_context };
+		ExecutionScopedState conditional_context{
+			&parent_context,
+			parent_context.get_termination_token(),
+			parent_context.get_result_target()
+		};
 		this->statement->execute(conditional_context);
 	}
 
@@ -689,8 +735,12 @@ auto FunctionCallNode::call(const ExecutionScopedState& context) const -> std::o
 {
 	const Function* function = context.try_get_function(this->name);
 
+	if (function == nullptr) {
+		terminate_illegal_program("Function is not recognized.");
+	}
+
 	const std::vector<std::string> args = this->args->get_list();
-	std::optional<Value> value = function->call(context, args);
+	std::optional<Value> value = function->call(const_cast<ExecutionScopedState&>(context), args); //TODO
 
 	return value;
 }
