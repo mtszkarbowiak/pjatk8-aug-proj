@@ -38,6 +38,40 @@ print a;
 
 Which will print name, type and value of the variable.
 
+
+### Operators
+
+The language supports basic arithmetic and logic operators to be used with `Number` and `Logic` values respectively.
+
+```
+let a = 5; let b = 3;
+let n1 = a + b; /* 8 */
+let n2 = a - b; /* 2 */
+let n3 = a * b; /* 15 */
+let n4 = a / b; /* 1 */
+let n5 = a % b; /* 2 */
+let n6 = -a; /* -5 */
+
+let c = true; let d = false;
+let l1 = c && d;
+let l2 = c || d;
+let l3 = c ^ d;
+let l4 = !c;
+```
+
+Also comparison operators can be used.
+
+```
+let a = 5; let b = 3;
+let l1 = a == b; /* false */
+let l2 = a != b; /* true */
+let l3 = a > b; /* true */
+let l4 = a >= b; /* true */
+/* ... */
+```
+
+With `==` and `!=` applicable for both `Number` and `Logic` types.
+
 ### Flow Control
 
 The language supports two flow control keywords: `if` and `while`. Of course, they require `true` to be executed. The biggest difference is that they require semicolon.
